@@ -1,0 +1,14 @@
+django
+djangorestframework
+numpy
+pandas
+scikit-learn
+matplotlib
+joblib
+seaborn
+pydantic
+requests
+imblearn
+mysqlclient 
+social-auth-app-django 
+djangorestframework-simplejwt
