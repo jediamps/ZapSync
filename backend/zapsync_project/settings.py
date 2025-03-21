@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -47,6 +48,12 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+]
+
+# Allow frontend to make API calls
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000", 
 ]
 
 ROOT_URLCONF = 'zapsync_project.urls'
@@ -74,9 +81,17 @@ WSGI_APPLICATION = 'zapsync_project.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.sqlite3',
+    #     'NAME': BASE_DIR / 'db.sqlite3',
+    # }
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'zapsync_db',                # Your MySQL database name
+        'USER': 'root',                      # Your MySQL username
+        'PASSWORD': 'Final@2025',            # Your MySQL password
+        'HOST': '192.168.192.215',                 # Or ZeroTier IP if remote
+        'PORT': '3306',
     }
 }
 
