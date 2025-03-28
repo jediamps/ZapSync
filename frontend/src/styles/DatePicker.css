@@ -1,0 +1,101 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&display=swap");
+:root {
+  --primary: #176ede;
+  --bg-primary: #fff;
+  --bg-secondary: #edf2f8;
+  --bg-terinary: #fafafa;
+  --body-bg: #f5f8ff;
+  --box-bg: #fff;
+  --input-bg: #f5f8ff;
+  --txt-color: #2f2d2f;
+  --txt-second-color: #ccc;
+  --border-color: #4267b2;
+  --box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+}
+
+
+
+.d-flex p{
+  font-size: 14px;
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  border-radius: 50px;
+  background: #d4d9e2;
+}
+
+.w-100{
+  width: 100% !important;
+}
+
+.d-flex {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+.app {
+  width: 400px;
+  background-color: var(--box-bg);
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: var(--box-shadow);
+  margin: 0px 10px;
+}
+
+.app-heading{
+  margin-bottom: 15px;
+}
+
+.app-heading_text{
+  margin:0px 5px;
+}
+
+.app-heading_text.text-primary{
+  color: var(--primary);
+}
+
+.app-container{
+  margin-bottom: 20px;
+}
+
+.app .app-select{
+  width: 32%;
+}
+
+.app .app-select select{
+  width: 100%;
+  padding: 10px;
+  outline: none;
+  border-radius: 5px;
+  border-color: #ccc;
+}
+
+.app .app-select:not(:last-child){
+  margin-right: 5px;
+}
+
+.app-format {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f3f5f7;
+  padding: 10px;
+  border-radius: 10px;
+  margin: 10px 0px
+}
+
+.app-format > p:nth-child(2){
+  font-weight: bold;
+  color: var(--primary);
+}
