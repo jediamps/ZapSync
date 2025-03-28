@@ -14,7 +14,7 @@ export default function Login() {
     <div className="flex flex-col md:flex-row h-screen items-center justify-center bg-[#fff] p-4">
       {/* Left Section */}
       <div className="w-full md:w-1/2 p-8 text-center md:text-left">
-        <h1 className="text-3xl font-bold text-black">ZapSync</h1>
+        <h1 className="text-3xl md:text-[60px] lg:text-[100px] font-bold text-black">ZapSync</h1>
         <h2 className="mt-6 text-2xl font-semibold">Welcome, Back</h2>
         <p className="text-gray-600">Hey, welcome back to your special place</p>
 

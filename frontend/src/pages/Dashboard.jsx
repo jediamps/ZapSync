@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Upload, Search, Notifications, HelpOutline, Menu, ViewList, ViewModule, KeyboardArrowDown } from "@mui/icons-material";
-// import SettingsIcon from '@mui/icons-material/Settings';
+import SettingsIcon from '@mui/icons-material/Settings';
 import Sidebar from "../components/Sidebar";
 import FolderCard from "../components/FolderCard";
 import RecentFiles from "../components/RecentFiles";
@@ -41,7 +41,7 @@ const Dashboard = () => {
             {/* Right Side: Profile and Icons */}
             <div className="flex items-center gap-6">
               <HelpOutline className="text-gray-600 cursor-pointer hover:text-blue-600" />
-              {/* <SettingsIcon className="text-gray-600 cursor-pointer hover:text-blue-600" /> */}
+              <SettingsIcon className="text-gray-600 cursor-pointer hover:text-blue-600" />
               <Notifications className="text-gray-600 cursor-pointer hover:text-blue-600" />
               <div className="flex items-center gap-2 cursor-pointer">
                 <img src="https://via.placeholder.com/40" alt="Profile" className="w-10 h-10 rounded-full" />
