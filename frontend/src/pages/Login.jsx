@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -14,7 +15,7 @@ export default function Login() {
     <div className="flex flex-col md:flex-row h-screen items-center justify-center bg-[#fff] p-4">
       {/* Left Section */}
       <div className="w-full md:w-1/2 p-8 text-center md:text-left">
-        <h1 className="text-3xl md:text-[60px] lg:text-[100px] font-bold text-black">ZapSync</h1>
+        <h1 className="text-3xl md:text-[60ox] lg:text-[100px] font-bold text-[#2E86AB]">ZapSync</h1>
         <h2 className="mt-6 text-2xl font-semibold">Welcome, Back</h2>
         <p className="text-gray-600">Hey, welcome back to your special place</p>
 
@@ -45,15 +46,15 @@ export default function Login() {
             </label>
             <a href="#" className="text-blue-500 hover:underline">Forgot Password?</a>
           </div>
-          <button
-            type="submit"
-            className="w-full p-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
-          >
-            Sign In
-          </button>
+            <button
+              type="submit"
+              className="w-full p-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
+            >
+              Sign In
+            </button>
         </form>
         <p className="mt-4 text-sm">
-          Don't have an account? <a href="#" className="text-blue-500 hover:underline">Sign up</a>
+          Don't have an account? <Link to="/register"> <a className="text-blue-500 hover:underline">Sign up</a></Link>
         </p>
       </div>
 
