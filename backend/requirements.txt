@@ -13,3 +13,5 @@ mysqlclient
 social-auth-app-django 
 djangorestframework-simplejwt
 django-cors-headers
+django-allauth
+bcrypt

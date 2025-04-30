@@ -1,7 +1,7 @@
 import { Navigate, Outlet } from "react-router-dom";
 
 const ProtectedRoute = () => {
-  const isAuthenticated = localStorage.getItem("zap_sync_token") !== null;
+  const isAuthenticated = localStorage.getItem("zapsync_token") !== null;
 
   return isAuthenticated ? <Outlet /> : <Navigate to="/" />;
 };

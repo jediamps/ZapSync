@@ -11,9 +11,13 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import sys
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+sys.path.append(os.path.join(BASE_DIR, 'zapsync_project'))
 
 
 # Quick-start development settings - unsuitable for production
@@ -38,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders',
+    'zapsync_app',
 ]
 
 MIDDLEWARE = [
@@ -52,9 +57,9 @@ MIDDLEWARE = [
 ]
 
 # Allow frontend to make API calls
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000", 
-]
+CORS_ALLOW_ALL_ORIGINS = True
+
+CORS_ALLOW_CREDENTIALS = True
 
 ROOT_URLCONF = 'zapsync_project.urls'
 
@@ -87,10 +92,10 @@ DATABASES = {
     # }
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'zapsync_db',                # Your MySQL database name
+        'NAME': 'zapsync',                   # Your MySQL database name
         'USER': 'root',                      # Your MySQL username
         'PASSWORD': 'Final@2025',            # Your MySQL password
-        'HOST': '192.168.192.215',                 # Or ZeroTier IP if remote
+        'HOST': 'localhost',                 # Or ZeroTier IP if remote
         'PORT': '3306',
     }
 }
