@@ -5,8 +5,8 @@ const BASE_URL = "http://localhost:8000/api"; // Change this to match your backe
 // Function to register a new user
 export const registerUser = async (userData) => {
   try {
-    const response = await axios.post(`${BASE_URL}/register/`, userData);
-    return response.data; // Return response data (token, user info, etc.)
+    const response = await axios.post(`${BASE_URL}/users/register/`, userData);
+    return response.data; 
   } catch (error) {
     console.error("Registration Error:", error.response?.data || error.message);
     throw error.response?.data || error.message; // Throw error for handling in frontend
@@ -15,7 +15,7 @@ export const registerUser = async (userData) => {
 
 export const loginUser = async (email, password, latitude, longitude) => {
     try {
-      const response = await axios.post(`${API_URL}/login/`, {
+      const response = await axios.post(`${BASE_URL}/users/login/`, {
         email,
         password,
         latitude,
@@ -23,13 +23,14 @@ export const loginUser = async (email, password, latitude, longitude) => {
       });
       return response.data;
     } catch (error) {
-      throw error.response.data;
+      console.error("Login Error:", error.response?.data || error.message);
+      throw error.response?.data || error.message;
     }
   };
   
   export const googleLogin = async (googleToken, latitude, longitude) => {
     try {
-      const response = await axios.post(`${API_URL}/google-login/`, {
+      const response = await axios.post(`${BASE_URL}/google-login/`, {
         token: googleToken,
         latitude,
         longitude,

@@ -31,7 +31,20 @@ export default function Register() {
 
     setLoading(true);
     try {
-      const userData = { fullName, email, password, phone, captcha_token: captchaToken, device_info: deviceInfo };
+      const userData = {
+        fullname: fullName,
+        email,
+        password_hash: password,
+        phone,
+        captcha_token: captchaToken,
+        device_type: deviceInfo.deviceType,
+        browser: deviceInfo.browser,
+        screen_width: deviceInfo.screenWidth,
+        screen_height: deviceInfo.screenHeight,
+        userAgent: deviceInfo.userAgent,
+        platform: deviceInfo.platform,
+      };
+      
       const data = await registerUser(userData);
       
       toast.success("Registration successful!");
@@ -91,7 +104,7 @@ export default function Register() {
           
           {/* CAPTCHA Verification */}
           <ReCAPTCHA
-            sitekey="YOUR_RECAPTCHA_SITE_KEY" // Replace with your reCAPTCHA site key
+            sitekey="6LfY5CkrAAAAAMil5kB6Hhc1YSrnJ4yTA-oVlXNA" 
             onChange={(token) => setCaptchaToken(token)}
           />
 

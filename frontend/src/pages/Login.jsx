@@ -20,14 +20,16 @@ export default function Login() {
       const data = await loginUser(email, password, location.latitude, location.longitude);
       
       toast.success("Login successful!");
+      console.log(data)
 
       // Store token or user data
-      localStorage.setItem("zapsync_token", data.token);
+      localStorage.setItem("zapsync_token", data.token.access);
 
 
       // Redirect to dashboard
       setTimeout(() => navigate("/dashboard"), 2000);
     } catch (error) {
+      console.error(error)
       toast.error(error.detail || "Login failed!");
     } finally {
       setLoading(false);
