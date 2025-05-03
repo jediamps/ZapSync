@@ -6,14 +6,14 @@ const Sidebar = ({ isOpen, onClose }) => {
       {/* Overlay for mobile */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-20 bg-black bg-opacity-50 lg:hidden"
+          className="fixed inset-0 z-20 backdrop-blur-sm bg-white/10 lg:hidden"
           onClick={onClose}
         ></div>
       )}
 
       {/* Sidebar */}
       <aside
-        className={`fixed lg:relative inset-y-0 left-0 z-30 w-54 h-screen bg-[#2E86AB] text-white flex flex-col p-5 transform transition-transform duration-300 ease-in-out ${
+        className={`fixed lg:relative inset-y-0 left-0 z-30 w-54 h-full bg-[#2E86AB] text-white flex flex-col p-5 transform transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >

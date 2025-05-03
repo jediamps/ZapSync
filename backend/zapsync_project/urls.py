@@ -20,4 +20,5 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/users/', include('zapsync_app.users.urls')),
+    path('api/files/', include('zapsync_app.files.urls')),
 ]

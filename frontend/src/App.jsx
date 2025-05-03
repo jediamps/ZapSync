@@ -11,9 +11,9 @@ function App() {
       <Routes>
         <Route path="/" element={<LoginPage />} />
         <Route path="/register" element={<Register />} />
-        {/* <Route element={<ProtectedRoute />}> */}
+        <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
-        {/* </Route> */}
+        </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>

@@ -60,3 +60,21 @@ export const getUserProfile = async (token) => {
 };
 
 
+export const uploadFile = async (file, description) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("description", description);
+
+  const token = localStorage.getItem("zapsync_token");
+
+  const response = await axios.post(`${BASE_URL}/files/upload/`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return response.data;
+};
+
+
