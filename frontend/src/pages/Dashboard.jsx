@@ -16,6 +16,7 @@ const Dashboard = () => {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false); 
   const [description, setDescription] = useState('');
   const fileInputRef = useRef(null);
+  const [loading, setLoading] = useState(false);
 
   const handleUploadClick = () => {
     fileInputRef.current.click();
@@ -33,6 +34,7 @@ const Dashboard = () => {
 
 
   const handleFileUpload = async () => {
+    setLoading(true);
     if (!file) return;
 
     const formData = new FormData();
@@ -40,8 +42,7 @@ const Dashboard = () => {
 
     try {
       const res = await uploadFile(file, description);
-      if (res.ok) {
-        const data = await res.json();
+      if (res.message == "User upload successful") {
         toast.success("File uploaded successfully!");
         setFile(null); 
         setIsPreviewOpen(false);
@@ -53,6 +54,8 @@ const Dashboard = () => {
     } catch (err) {
       toast.error("Error uploading file!"); 
       console.error("Error uploading file:", err);
+    } finally {
+      setLoading(false);
     }
     setIsPreviewOpen(false);
   };
@@ -251,7 +254,7 @@ const Dashboard = () => {
             onClick={handleFileUpload} 
             className="bg-[#2E86AB] text-white px-4 py-2 rounded-lg w-full cursor-pointer hover:bg-[#1d6a8f] transition-colors"
           >
-            Upload File
+             {loading ? "Uploading..." : "Upload File"}
           </button>
           <button 
             onClick={() => setIsPreviewOpen(false)} 

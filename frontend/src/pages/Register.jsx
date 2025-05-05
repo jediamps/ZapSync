@@ -7,6 +7,8 @@ import { registerUser } from "../services/api";
 import { getDeviceInfo } from "../../utils/UserDeviceInfo";
 
 export default function Register() {
+  const RECAPTCHA_ID = import.meta.env.VITE_RECAPTCHA_ID;
+
   const [fullName, setFullname] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,7 +36,7 @@ export default function Register() {
       const userData = {
         fullname: fullName,
         email,
-        password_hash: password,
+        password: password,
         phone,
         captcha_token: captchaToken,
         device_type: deviceInfo.deviceType,
@@ -46,6 +48,7 @@ export default function Register() {
       };
       
       const data = await registerUser(userData);
+      console.log(data)
       
       toast.success("Registration successful!");
       setTimeout(() => navigate("/"), 2000);
@@ -104,7 +107,7 @@ export default function Register() {
           
           {/* CAPTCHA Verification */}
           <ReCAPTCHA
-            sitekey="6LfY5CkrAAAAAMil5kB6Hhc1YSrnJ4yTA-oVlXNA" 
+            sitekey={RECAPTCHA_ID}
             onChange={(token) => setCaptchaToken(token)}
           />
 

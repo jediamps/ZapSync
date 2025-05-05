@@ -23,7 +23,7 @@ export default function Login() {
       console.log(data)
 
       // Store token or user data
-      localStorage.setItem("zapsync_token", data.token.access);
+      localStorage.setItem("zapsync_token", data.access);
 
 
       // Redirect to dashboard
