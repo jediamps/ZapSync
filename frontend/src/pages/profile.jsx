@@ -49,7 +49,7 @@ const ProfilePage = () => {
             </div>
             <div className="text-center">
               <p className="text-gray-400">0h</p>
-              <p className="font-semibold">reported time this month</p>
+              <p className="font-bold">reported time this month</p>
             </div>
           </div>
 
