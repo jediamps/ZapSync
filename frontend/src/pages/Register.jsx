@@ -46,6 +46,7 @@ export default function Register() {
         userAgent: deviceInfo.userAgent,
         platform: deviceInfo.platform,
       };
+      console.log(userData)
       
       const data = await registerUser(userData);
       console.log(data)

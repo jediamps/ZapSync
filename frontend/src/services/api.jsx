@@ -14,26 +14,41 @@ export const registerUser = async (userData) => {
 };
 
 export const loginUser = async (email, password, latitude, longitude) => {
-    try {
-      const response = await axios.post(`${BASE_URL}/users/login/`, {
-        email,
-        password,
-        latitude,
-        longitude,
-      });
-      return response.data;
-    } catch (error) {
-      console.error("Login Error:", error.response?.data || error.message);
-      throw error.response?.data || error.message;
-    }
-  };
+  try {
+    // Fetch IP, city, and country using ipapi
+    const locationRes = await axios.get("https://ipapi.co/json/");
+    const { ip, country_name, city, region } = locationRes.data;
+
+    const response = await axios.post(`${BASE_URL}/users/login/`, {
+      email,
+      password,
+      latitude,
+      longitude,
+      ip_address: ip,
+      country: country_name,
+      city: region + ", " + city,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Login Error:", error.response?.data || error.message);
+    throw error.response?.data || error.message;
+  }
+};
+
   
   export const googleLogin = async (googleToken, latitude, longitude) => {
     try {
+      // Fetch IP, city, and country using ipapi
+      const locationRes = await axios.get("https://ipapi.co/json/");
+      const { ip, country_name, city, region } = locationRes.data;
       const response = await axios.post(`${BASE_URL}/google-login/`, {
         token: googleToken,
         latitude,
         longitude,
+        ip_address: ip,
+        country: country_name,
+        city: region + ", " + city,
       });
       return response.data;
     } catch (error) {
@@ -50,7 +65,7 @@ export const logoutUser = () => {
 export const getUserProfile = async (token) => {
   try {
     const response = await axios.get(`${BASE_URL}/profile/`, {
-      headers: { Authorization: `Bearer ${token}` }, // Send token in header
+      headers: { Authorization: `Bearer ${token}` },
     });
     return response.data;
   } catch (error) {

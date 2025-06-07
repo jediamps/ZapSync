@@ -4,4 +4,4 @@ from .models import UploadedFile
 class UploadedFileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UploadedFile
-        fields = ['id', 'user_id', 'file', 'description', 'uploaded_at']
+        fields = ['id', 'user_id', 'cloudinary_url', 'public_id', 'description', 'uploaded_at']
