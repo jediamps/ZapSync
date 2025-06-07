@@ -52,7 +52,7 @@ const Dashboard = () => {
         console.error("Upload failed.");
       }
     } catch (err) {
-      toast.error("Error uploading file!"); 
+      toast.error(err.response?.data?.error || err.response?.data?.detail); 
       console.error("Error uploading file:", err);
     } finally {
       setLoading(false);
@@ -238,7 +238,35 @@ const Dashboard = () => {
         <div className="bg-white p-6 rounded-lg max-w-md w-full">
           <h3 className="text-xl font-semibold mb-4">File Preview</h3>
           <div className="mb-4">
-            <img src={URL.createObjectURL(file)} alt="Preview" className="w-full h-64 object-contain rounded-lg" />
+            {file?.type.startsWith("image/") && (
+              <img
+                src={URL.createObjectURL(file)}
+                alt="Preview"
+                className="w-full h-64 object-contain rounded-lg"
+              />
+            )}
+
+            {file?.type === "application/pdf" && (
+              <embed
+                src={URL.createObjectURL(file)}
+                type="application/pdf"
+                className="w-full h-64 rounded-lg"
+              />
+            )}
+
+            {file?.type.startsWith("video/") && (
+              <video controls className="w-full h-64 rounded-lg">
+                <source src={URL.createObjectURL(file)} type={file.type} />
+                Your browser does not support the video tag.
+              </video>
+            )}
+
+            {!["image/", "application/pdf", "video/"].some(t => file?.type.startsWith(t)) && (
+              <div className="text-gray-600 bg-gray-100 p-4 rounded-lg text-center">
+                <p className="font-semibold">No preview available</p>
+                <p className="text-sm mt-1">{file?.name}</p>
+              </div>
+            )}
           </div>
 
           {/* Description Input */}

@@ -23,7 +23,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     # 🧑‍💻 Basic Info
     fullname = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
-    password_hash = models.CharField(max_length=255)  # Optional: store raw hash if needed
     phone = models.CharField(max_length=20, blank=True)
     google_id = models.CharField(max_length=255, blank=True, null=True)
 
