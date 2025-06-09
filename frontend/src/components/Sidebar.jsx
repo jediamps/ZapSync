@@ -20,7 +20,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         <h1 className="text-2xl font-bold mb-8">ZapSync</h1>
 
         <nav className="flex flex-col gap-6">
-          <a href="#" className="flex items-center gap-4 text-lg hover:text-blue-300 transition-colors">
+          <a href="/dashboard" className="flex items-center gap-4 text-lg hover:text-blue-300 transition-colors">
             <Cloud /> My Drive
           </a>
           <a href="#" className="flex items-center gap-4 text-lg hover:text-blue-300 transition-colors">

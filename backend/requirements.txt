@@ -16,7 +16,6 @@ django-cors-headers
 django-allauth
 bcrypt
 geopy
-tensorflow
 cloudinary
 better_profanity 
 PyMuPDF
