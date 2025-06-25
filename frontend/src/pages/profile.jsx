@@ -151,7 +151,7 @@ const ProfilePage = () => {
 
           <div className="bg-gradient-to-r from-white to-green-50 p-6 rounded-lg border">
             <p className="text-gray-500 mb-2">One important thing...</p>
-            <p className="text-lg font-semibold">Arlene is waiting for the draft contract</p>
+            <p className="text-lg font-semibold">Jedidiah is waiting for the draft contract</p>
             <button
               onClick={() => alert("Contract creation logic goes here.")}
               className="mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400"

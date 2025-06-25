@@ -123,7 +123,7 @@ const Dashboard = () => {
                       Profile
                     </a>
                     <a
-                      href="#"
+                      href="/settings"
                       className="block px-4 py-2 text-gray-700 hover:bg-gray-100 transition-colors"
                     >
                       Settings
@@ -169,7 +169,7 @@ const Dashboard = () => {
               {/* Welcome Section */}
               <div className="bg-[#A1D2CE] p-6 rounded-lg flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
                 <div>
-                  <h2 className="text-xl font-semibold">Welcome Back, Felix!</h2>
+                  <h2 className="text-xl font-semibold">Welcome Back, Jedidiah!</h2>
                   <p className="text-gray-700">Arrange your documents and files to your preference</p>
                   <button className="mt-3 px-4 py-2 bg-[#2E86AB] text-white rounded-lg cursor-pointer hover:bg-[#1d6a8f] transition-colors">
                     Customize
