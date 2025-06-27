@@ -17,7 +17,7 @@
   
   .folderCard:hover {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    border-color: #2E86AB;
+    border-color: var(--color-primary);
   }
   
   /* Header Styles */
@@ -42,7 +42,7 @@
   }
   
   .folderIcon {
-    color: #2E86AB;
+    color: var(--color-primary);
   }
   
   .folderTitle {
@@ -62,7 +62,7 @@
   }
   
   .menuButton:hover {
-    color: #2E86AB;
+    color: var(--color-primary);
     background-color: #E8F4F3;
   }
   
@@ -129,11 +129,11 @@
     width: 2rem;
     height: 2rem;
     border-radius: 9999px;
-    border: 2px dashed #2E86AB;
+    border: 2px dashed var(--color-primary);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #2E86AB;
+    color: var(--color-primary);
     transition: all 0.2s ease;
   }
   

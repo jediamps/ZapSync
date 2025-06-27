@@ -133,8 +133,3 @@ def validate_folder_name(value):
     if len(value) > 255:
         raise ValidationError("Folder name is too long (max 255 characters)")
     
-    if not re.match(r'^[\w\-. ]+$', value):
-        raise ValidationError(
-            "Folder name contains invalid characters. "
-            "Only letters, numbers, spaces, hyphens, underscores and periods are allowed."
-        )

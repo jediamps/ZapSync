@@ -14,12 +14,14 @@ import {
 } from "../services/api";
 import { toast } from "react-toastify";
 import { useOutletContext } from "react-router";
+import FolderListCard from "../components/FolderListCard";
 
 const Dashboard = () => {
   // File states
   const [file, setFile] = useState(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [description, setDescription] = useState('');
+  const [showAllRecentFiles, setShowAllRecentFiles] = useState(false);
   
   // Folder states
   const [folderTitle, setFolderTitle] = useState('');
@@ -172,8 +174,8 @@ const Dashboard = () => {
       setFolderFiles([]);
       
       // Refresh data
-      // const updatedFiles = await getFiles();
-      // setFiles(updatedFiles);
+      const updatedFolders = await getFolders();
+      setFolders(updatedFolders);
       // setFilteredFiles(updatedFiles);
       // setStorage(await getStorageUsage());
     } catch (error) {
@@ -217,16 +219,18 @@ const Dashboard = () => {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
             <div className="flex items-center gap-2">
               <h2 className="text-xl font-semibold">Dashboard</h2>
-              <div className="hidden sm:flex gap-1">
+              <div className="hidden sm:flex gap-1 bg-gray-100 p-1 rounded-lg">
                 <button 
                   onClick={() => setViewMode('grid')} 
-                  className={`p-1 rounded ${viewMode === 'grid' ? 'text-blue-600 bg-blue-100' : 'text-gray-500'}`}
+                  className={`p-2 rounded-lg ${viewMode === 'grid' ? 'bg-white shadow-sm text-[var(--color-primary)]' : 'text-gray-500 hover:text-gray-700'}`}
+                  aria-label="Grid view"
                 >
                   <Grid size={18} />
                 </button>
                 <button 
                   onClick={() => setViewMode('list')} 
-                  className={`p-1 rounded ${viewMode === 'list' ? 'text-blue-600 bg-blue-100' : 'text-gray-500'}`}
+                  className={`p-2 rounded-lg ${viewMode === 'list' ? 'bg-white shadow-sm text-[var(--color-primary)]' : 'text-gray-500 hover:text-gray-700'}`}
+                  aria-label="List view"
                 >
                   <List size={18} />
                 </button>
@@ -254,7 +258,7 @@ const Dashboard = () => {
               <div className="relative">
                 <button 
                   onClick={() => setShowUploadDropdown(!showUploadDropdown)}
-                  className="bg-[#2E86AB] text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-[#1d6a8f] transition-colors"
+                  className="bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-[#1d6a8f] transition-colors"
                 >
                   <Upload size={18} /> Upload
                 </button>
@@ -297,29 +301,11 @@ const Dashboard = () => {
           <h2 className="text-xl font-semibold mb-4">Folders</h2>
 
           {folders.length > 0 ? (
-            <div className="space-y-6">
-              {/* Top Row - First 3 Folders */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {folders.slice(0, 3).map(folder => (
-                  <FolderCard 
-                    key={folder.id}
-                    title={folder.name}
-                    filesCount={folder.file_count || 0}
-                    createdDate={new Date(folder.created_at).toLocaleDateString('en-US', {
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric'
-                    })}
-                    users={folder.shared_with?.map(user => user.avatar) || []}
-                    isStarred={folder.is_starred}
-                  />
-                ))}
-              </div>
-
-              {/* Bottom Row - Next 3 Folders (conditionally shown) */}
-              {(showAllFolders || folders.length <= 6) && folders.length > 3 && (
+            viewMode == 'grid' ? (
+              <div className="space-y-6">
+                {/* Top Row - First 3 Folders */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {folders.slice(3, 6).map(folder => (
+                  {folders.slice(0, 3).map(folder => (
                     <FolderCard 
                       key={folder.id}
                       title={folder.name}
@@ -334,54 +320,103 @@ const Dashboard = () => {
                     />
                   ))}
                 </div>
-              )}
 
-              {/* Show More/Show Less Button */}
+                {/* Bottom Row - Next 3 Folders (conditionally shown) */}
+                {(showAllFolders || folders.length <= 6) && folders.length > 3 && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {folders.slice(3, 6).map(folder => (
+                      <FolderCard 
+                        key={folder.id}
+                        title={folder.name}
+                        filesCount={folder.file_count || 0}
+                        createdDate={new Date(folder.created_at).toLocaleDateString('en-US', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric'
+                        })}
+                        users={folder.shared_with?.map(user => user.avatar) || []}
+                        isStarred={folder.is_starred}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {/* Show More/Show Less Button */}
+                {folders.length > 6 && (
+                  <div className="flex justify-center">
+                    <button
+                      onClick={() => setShowAllFolders(!showAllFolders)}
+                      className="text-[#A1D2CE] hover:text-[#78C0B0] font-medium flex items-center gap-1 transition-colors"
+                    >
+                      {showAllFolders ? (
+                        <>
+                          <span>Show Less</span>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="18 15 12 9 6 15"></polyline>
+                          </svg>
+                        </>
+                      ) : (
+                        <>
+                          <span>Show More ({folders.length - 6} more)</span>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                          </svg>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
+
+                {/* Display remaining folders when expanded */}
+                {showAllFolders && folders.length > 6 && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {folders.slice(6).map(folder => (
+                      <FolderCard 
+                        key={folder.id}
+                        title={folder.name}
+                        filesCount={folder.file_count || 0}
+                        createdDate={new Date(folder.created_at).toLocaleDateString('en-US', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric'
+                        })}
+                        users={folder.shared_with?.map(user => user.avatar) || []}
+                        isStarred={folder.is_starred}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+                // List View Implementation
+              <div className="bg-white rounded-lg border border-gray-100 overflow-hidden">
+              {folders.slice(0, showAllFolders ? folders.length : 6).map(folder => (
+                <FolderListCard 
+                  key={folder.id}
+                  title={folder.name}
+                  filesCount={folder.file_count || 0}
+                  createdDate={new Date(folder.created_at).toLocaleDateString('en-US', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric'
+                  })}
+                  users={folder.shared_with?.map(user => user.avatar) || []}
+                  isStarred={folder.is_starred}
+                />
+              ))}
+              
               {folders.length > 6 && (
-                <div className="flex justify-center">
+                <div className="flex justify-center p-4 border-t border-gray-100">
                   <button
                     onClick={() => setShowAllFolders(!showAllFolders)}
                     className="text-[#A1D2CE] hover:text-[#78C0B0] font-medium flex items-center gap-1 transition-colors"
                   >
-                    {showAllFolders ? (
-                      <>
-                        <span>Show Less</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="18 15 12 9 6 15"></polyline>
-                        </svg>
-                      </>
-                    ) : (
-                      <>
-                        <span>Show More ({folders.length - 6} more)</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="6 9 12 15 18 9"></polyline>
-                        </svg>
-                      </>
-                    )}
+                    {showAllFolders ? 'Show Less' : `Show More (${folders.length - 6} more)`}
                   </button>
                 </div>
               )}
-
-              {/* Display remaining folders when expanded */}
-              {showAllFolders && folders.length > 6 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {folders.slice(6).map(folder => (
-                    <FolderCard 
-                      key={folder.id}
-                      title={folder.name}
-                      filesCount={folder.file_count || 0}
-                      createdDate={new Date(folder.created_at).toLocaleDateString('en-US', {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric'
-                      })}
-                      users={folder.shared_with?.map(user => user.avatar) || []}
-                      isStarred={folder.is_starred}
-                    />
-                  ))}
-                </div>
-              )}
             </div>
+            )
           ) : (
             <div className="bg-gray-50 rounded-lg p-8 text-center">
               <p className="text-gray-500">No folders yet. Create your first folder!</p>
@@ -398,19 +433,49 @@ const Dashboard = () => {
           )}
 
           {/* Recent files */}
-          <div className="bg-white p-4 rounded-lg shadow-sm w-full mt-10 border border-gray-100">
-            <h2 className="text-lg font-semibold mb-4">Recent Files</h2>
+          <div className={`bg-white rounded-lg shadow-sm w-full mt-10 ${
+            viewMode === 'list' ? 'border border-gray-100' : 'border border-gray-100'
+          }`}>
+            <div className="flex justify-between items-center p-4 border-b border-gray-100">
+              <h2 className="text-lg font-semibold">Recent Files</h2>
+              {viewMode === 'grid' && files.length > 3 && (
+                <button 
+                  onClick={() => setShowAllRecentFiles(!showAllRecentFiles)}
+                  className="text-sm text-[var(--color-primary)] hover:text-[#1d6a8f]"
+                >
+                  {showAllRecentFiles ? 'Show Less' : 'Show More'}
+                </button>
+              )}
+            </div>
+            
             {files.length > 0 ? (
-              files.slice(0, 5).map((file, index) => (
-                <RecentFiles key={file.id || index} file={file} />
-              ))
+              viewMode === 'list' ? (
+                <div className="divide-y divide-gray-100">
+                  {files.slice(0, 5).map((file, index) => (
+                    <RecentFiles key={file.id || index} file={file} viewMode={viewMode} />
+                  ))}
+                </div>
+              ) : (
+                <div className="p-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {(showAllRecentFiles ? files : files.slice(0, 3)).map((file, index) => (
+                      <RecentFiles 
+                        key={file.id || index} 
+                        file={file} 
+                        viewMode={viewMode}
+                        isGridItem={true}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )
             ) : (
               <div className="text-center py-6">
                 <p className="text-gray-500">No recent files</p>
               </div>
             )}
           </div>
-        </div>
+        </div> 
 
         {/* Sidebar */}
         <div className="flex flex-col gap-6">
@@ -467,7 +532,7 @@ const Dashboard = () => {
 
             <button 
               onClick={handleFileUpload} 
-              className="bg-[#2E86AB] text-white px-4 py-2 rounded-lg w-full hover:bg-[#1d6a8f] transition-colors"
+              className="bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg w-full hover:bg-[#1d6a8f] transition-colors"
               disabled={loading}
             >
               {loading ? "Uploading..." : "Upload File"}

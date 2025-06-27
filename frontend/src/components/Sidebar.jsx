@@ -24,7 +24,7 @@ const Sidebar = ({ isOpen, toggleSidebar, setShowLogoutConfirm }) => {
 
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-30 h-screen bg-[#2E86AB] text-white flex flex-col p-5 transform transition-all duration-300 ease-in-out ${
+      className={`fixed inset-y-0 left-0 z-30 h-screen bg-[var(--color-primary)] text-white flex flex-col p-5 transform transition-all duration-300 ease-in-out ${
         isOpen ? 'translate-x-0 w-64' : '-translate-x-full lg:translate-x-0 lg:w-20'
       }`}
     >
@@ -73,7 +73,7 @@ const Sidebar = ({ isOpen, toggleSidebar, setShowLogoutConfirm }) => {
             </div>
           ) : (
             <>
-              <div className="w-10 h-10 rounded-full bg-white text-[#2E86AB] flex items-center justify-center font-bold flex-shrink-0">
+              <div className="w-10 h-10 rounded-full bg-white text-[var(--color-primary)] flex items-center justify-center font-bold flex-shrink-0">
                 {getInitials(profile?.fullname)}
               </div>
               <div className={`flex-1 min-w-0 ${!isOpen && 'lg:hidden'}`}>

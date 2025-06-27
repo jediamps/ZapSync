@@ -115,7 +115,7 @@ const ProfilePage = () => {
       setIsEditing(false);
       
       toast.success("Profile updated successfully", {
-        className: "bg-[#2E86AB] text-white"
+        className: "bg-[var(--color-primary)] text-white"
       });
     } catch (error) {
       toast.error("Failed to update profile", {
@@ -127,7 +127,7 @@ const ProfilePage = () => {
   if (loading) {
     return (
       <div className="p-6 bg-gray-50 min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#2E86AB]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[var(--color-primary)]"></div>
       </div>
     );
   }
@@ -138,7 +138,7 @@ const ProfilePage = () => {
         <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded">
           <p>Error loading profile. <button 
             onClick={() => window.location.reload()}
-            className="text-[#2E86AB] font-medium hover:underline"
+            className="text-[var(--color-primary)] font-medium hover:underline"
           >
             Refresh page
           </button></p>
@@ -154,7 +154,7 @@ const ProfilePage = () => {
         <div className="mb-8 flex items-center gap-4">
           <button 
             onClick={toggleSidebar}
-            className="text-gray-600 hover:text-[#2E86AB] transition-colors"
+            className="text-gray-600 hover:text-[var(--color-primary)] transition-colors"
           >
             <Menu size={24} />
           </button>
@@ -169,7 +169,7 @@ const ProfilePage = () => {
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <div className="flex flex-col md:flex-row gap-6 items-start">
                 {/* Profile Initials Circle */}
-                <div className="flex items-center justify-center w-32 h-32 rounded-full bg-[#2E86AB] text-white text-4xl font-bold">
+                <div className="flex items-center justify-center w-32 h-32 rounded-full bg-[var(--color-primary)] text-white text-4xl font-bold">
                   {getInitials(user.name)}
                 </div>
                 
@@ -183,7 +183,7 @@ const ProfilePage = () => {
                             type="text"
                             value={formData.name}
                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#2E86AB] focus:border-transparent"
+                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                           />
                         </div>
                         <div>
@@ -192,7 +192,7 @@ const ProfilePage = () => {
                             type="text"
                             value={formData.username}
                             onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#2E86AB] focus:border-transparent"
+                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                           />
                         </div>
                       </div>
@@ -203,7 +203,7 @@ const ProfilePage = () => {
                           type="email"
                           value={formData.email}
                           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                          className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#2E86AB] focus:border-transparent"
+                          className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                         />
                       </div>
                       
@@ -213,14 +213,14 @@ const ProfilePage = () => {
                           value={formData.bio}
                           onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                           rows="3"
-                          className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#2E86AB] focus:border-transparent"
+                          className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
                         />
                       </div>
                       
                       <div className="flex gap-3">
                         <button 
                           onClick={handleSave} 
-                          className="flex items-center gap-2 bg-[#2E86AB] text-white px-4 py-2 rounded-lg hover:bg-[#1d6a8f] transition-colors"
+                          className="flex items-center gap-2 bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg hover:bg-[#1d6a8f] transition-colors"
                         >
                           <Check size={18} /> Save
                         </button>
@@ -245,7 +245,7 @@ const ProfilePage = () => {
                       
                       <button 
                         onClick={handleEditClick} 
-                        className="mt-4 flex items-center gap-2 bg-[#2E86AB] text-white px-4 py-2 rounded-lg hover:bg-[#1d6a8f] transition-colors"
+                        className="mt-4 flex items-center gap-2 bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg hover:bg-[#1d6a8f] transition-colors"
                       >
                         <Edit size={16} /> Edit Profile
                       </button>
@@ -274,9 +274,9 @@ const ProfilePage = () => {
                 <p className="text-lg font-semibold">Waiting for draft contract</p>
                 <button
                   onClick={() => toast.info("Contract creation logic would go here", {
-                    className: "bg-[#2E86AB] text-white"
+                    className: "bg-[var(--color-primary)] text-white"
                   })}
-                  className="mt-4 bg-[#2E86AB] text-white px-4 py-2 rounded-lg hover:bg-[#1d6a8f] transition-colors"
+                  className="mt-4 bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg hover:bg-[#1d6a8f] transition-colors"
                 >
                   Create contract
                 </button>
@@ -311,7 +311,7 @@ const ProfilePage = () => {
               <h3 className="text-xl font-semibold mb-4">Recent Activity</h3>
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
-                  <div className="bg-[#2E86AB] text-white p-2 rounded-full">
+                  <div className="bg-[var(--color-primary)] text-white p-2 rounded-full">
                     <Check size={16} />
                   </div>
                   <div>

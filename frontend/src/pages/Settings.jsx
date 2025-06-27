@@ -1,10 +1,14 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useOutletContext } from "react-router";
 import { Menu, ChevronDown } from 'lucide-react';
 
 const SettingsPage = () => {
   const [activeTab, setActiveTab] = useState("Appearance");
   const [showMobileTabs, setShowMobileTabs] = useState(false);
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+  const [primaryColor, setPrimaryColor] = useState(
+    localStorage.getItem('primaryColor') || '#2E86AB'
+  );
   const { toggleSidebar } = useOutletContext();
 
   const tabs = [
@@ -12,6 +16,36 @@ const SettingsPage = () => {
     "Notifications", "Billing", "Integrations"
   ];
 
+  // Apply theme and color changes
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+    
+    document.documentElement.style.setProperty('--color-primary', primaryColor);
+    document.documentElement.style.setProperty(
+      '--color-primary-hover', 
+      getHoverColor(primaryColor)
+    );
+    localStorage.setItem('primaryColor', primaryColor);
+  }, [theme, primaryColor]);
+
+  // Helper function to calculate hover color
+  const getHoverColor = (hex) => {
+    // Convert hex to RGB
+    let r = parseInt(hex.slice(1, 3)), g = parseInt(hex.slice(3, 5)), b = parseInt(hex.slice(5, 7));
+    
+    // Darken by 10%
+    r = Math.max(0, r - 25);
+    g = Math.max(0, g - 25);
+    b = Math.max(0, b - 25);
+    
+    // Convert back to hex
+    return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+  };
+
+  const handleColorChange = (e) => {
+    setPrimaryColor(e.target.value);
+  };
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -38,7 +72,7 @@ const SettingsPage = () => {
               </div>
               <div>
                 <label className="inline-flex items-center">
-                  <input type="checkbox" className="form-checkbox text-[#2E86AB]" />
+                  <input type="checkbox" className="form-checkbox text-[var(--color-primary)]" />
                   <span className="ml-2 text-sm text-gray-700">Show recent items on startup</span>
                 </label>
               </div>
@@ -59,13 +93,13 @@ const SettingsPage = () => {
               </div>
               <div>
                 <label className="inline-flex items-center">
-                  <input type="checkbox" className="form-checkbox text-[#2E86AB]" />
+                  <input type="checkbox" className="form-checkbox text-[var(--color-primary)]" />
                   <span className="ml-2 text-sm text-gray-700">Make profile discoverable</span>
                 </label>
               </div>
               <div>
                 <label className="inline-flex items-center">
-                  <input type="checkbox" className="form-checkbox text-[#2E86AB]" />
+                  <input type="checkbox" className="form-checkbox text-[var(--color-primary)]" />
                   <span className="ml-2 text-sm text-gray-700">Show activity status</span>
                 </label>
               </div>
@@ -87,64 +121,90 @@ const SettingsPage = () => {
               </div>
               <div>
                 <label className="inline-flex items-center">
-                  <input type="checkbox" className="form-checkbox text-[#2E86AB]" />
+                  <input type="checkbox" className="form-checkbox text-[var(--color-primary)]" />
                   <span className="ml-2 text-sm text-gray-700">Enable Two-Factor Authentication</span>
                 </label>
               </div>
             </div>
           </>
         );
-      case "Appearance":
-        return (
-          <>
-            <h2 className="text-lg font-semibold mb-2">Appearance</h2>
-            <p className="text-sm text-gray-600 mb-6">Change how your public dashboard looks and feels.</p>
-
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Theme</label>
-              <div className="flex gap-4 mt-2">
-                {["Light", "Dark", "System"].map((theme) => (
-                  <button
-                    key={theme}
-                    className={`border rounded px-4 py-2 text-sm ${
-                      theme === "Light" ? "bg-white text-black" : 
-                      theme === "Dark" ? "bg-gray-800 text-white" : 
-                      "bg-gray-100 text-black"
-                    }`}
-                  >
-                    {theme}
-                  </button>
-                ))}
+        case "Appearance":
+          return (
+            <>
+              <h2 className="text-lg font-semibold mb-2">Appearance</h2>
+              <p className="text-sm text-gray-600 mb-6">
+                Change how your public dashboard looks and feels.
+              </p>
+  
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Theme</label>
+                <div className="flex gap-4 mt-2">
+                  {["light", "dark", "system"].map((themeOption) => (
+                    <button
+                      key={themeOption}
+                      onClick={() => setTheme(themeOption)}
+                      className={`border rounded px-4 py-2 text-sm capitalize ${
+                        theme === themeOption
+                          ? "bg-[var(--color-primary)] text-white"
+                          : "bg-white text-gray-800 hover:bg-gray-50"
+                      }`}
+                    >
+                      {themeOption}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Brand color</label>
-              <input type="color" defaultValue="#444CE7" className="w-16 h-10 border rounded" />
-            </div>
-
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Dashboard charts</label>
-              <p className="text-xs text-[#2E86AB] mb-2 cursor-pointer">View examples</p>
-              <div className="flex gap-4">
-                {["Default", "Simplified", "Custom CSS"].map((option) => (
-                  <div key={option} className="border rounded p-3 text-center w-32 cursor-pointer">
-                    <div className="bg-gray-100 h-16 mb-2" />
-                    <p className="text-xs font-medium">{option}</p>
+  
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Primary Color
+                </label>
+                <div className="flex items-center gap-4">
+                  <input
+                    type="color"
+                    value={primaryColor}
+                    onChange={handleColorChange}
+                    className="w-16 h-10 border rounded cursor-pointer"
+                  />
+                  <span className="text-sm text-gray-600">{primaryColor}</span>
+                </div>
+              </div>
+  
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Preview
+                </label>
+                <div className="flex gap-4">
+                  <div className="flex-1 border rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-medium">Sample Component</h3>
+                      <button className="text-xs px-3 py-1 rounded bg-[var(--color-primary)] text-white">
+                        Button
+                      </button>
+                    </div>
+                    <div className="h-4 w-full rounded-full bg-[var(--color-primary-light)] mb-2"></div>
+                    <div className="h-4 w-3/4 rounded-full bg-[var(--color-primary-light)] mb-4"></div>
+                    <div className="flex gap-2">
+                      <div className="h-8 w-8 rounded-full bg-[var(--color-primary)]"></div>
+                      <div className="flex-1 border rounded p-2 text-sm">
+                        This is a preview of your selected color scheme
+                      </div>
+                    </div>
                   </div>
-                ))}
+                </div>
               </div>
-            </div>
-
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Language</label>
-              <select className="border rounded px-3 py-2 text-sm">
-                <option>English (UK)</option>
-                <option>English (US)</option>
-              </select>
-            </div>
-          </>
-        );
+  
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Language
+                </label>
+                <select className="border rounded px-3 py-2 text-sm">
+                  <option>English (UK)</option>
+                  <option>English (US)</option>
+                </select>
+              </div>
+            </>
+          );
       case "Notifications":
         return (
           <>
@@ -161,7 +221,7 @@ const SettingsPage = () => {
                     <label key={method} className="flex items-center space-x-2 text-sm">
                       <input
                         type="checkbox"
-                        className="form-checkbox h-4 w-4 text-[#2E86AB]"
+                        className="form-checkbox h-4 w-4 text-[var(--color-primary)]"
                       />
                       <span>{method}</span>
                     </label>
@@ -226,7 +286,7 @@ const SettingsPage = () => {
       <div className="mb-6 md:mb-8 flex items-center gap-4">
         <button 
           onClick={toggleSidebar}
-          className="text-gray-600 hover:text-[#2E86AB] transition-colors"
+          className="text-gray-600 hover:text-[var(--color-primary)] transition-colors"
         >
           <Menu size={24} />
         </button>
@@ -253,7 +313,7 @@ const SettingsPage = () => {
                 }}
                 className={`block w-full text-left px-4 py-2 text-sm ${
                   activeTab === tab 
-                    ? 'bg-[#2E86AB] text-white' 
+                    ? 'bg-[var(--color-primary)] text-white' 
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
               >
@@ -272,8 +332,8 @@ const SettingsPage = () => {
             onClick={() => setActiveTab(tab)}
             className={`py-2 px-4 text-sm font-medium border-b-2 transition-colors ${
               activeTab === tab 
-                ? "border-[#2E86AB] text-[#2E86AB]" 
-                : "border-transparent text-gray-500 hover:text-[#2E86AB]"
+                ? "border-[var(--color-primary)] text-[var(--color-primary)]" 
+                : "border-transparent text-gray-500 hover:text-[var(--color-primary)]"
             }`}
           >
             {tab}
@@ -288,7 +348,7 @@ const SettingsPage = () => {
           <button className="px-4 py-2 rounded border text-sm hover:bg-gray-50 transition-colors">
             Cancel
           </button>
-          <button className="px-4 py-2 rounded text-white bg-[#2E86AB] text-sm hover:bg-[#1E6F8C] transition-colors">
+          <button className="px-4 py-2 rounded text-white bg-[var(--color-primary)] text-sm hover:bg-[#1E6F8C] transition-colors">
             Save changes
           </button>
         </div>
