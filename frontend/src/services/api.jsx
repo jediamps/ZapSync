@@ -109,7 +109,7 @@ export const uploadFile = async (file, description) => {
 
 export const getFiles = async () => {
   try {
-    const response = await api.get("/files/");
+    const response = await api.get("/files/all/");
     return response.data;
   } catch (error) {
     throw error;
@@ -153,19 +153,33 @@ export const updateUserProfile = async (profileData) => {
   }
 };
 
-export const uploadAvatar = async (avatarFile) => {
+
+
+export const createFolder = async (folderData) => {
+  const response = await api.post('/folders/create/', folderData);
+  return response.data;
+};
+
+export const uploadFilesToFolder = async (folderId, files) => {
+  const formData = new FormData();
+  
+  files.forEach((file) => {
+    formData.append('files[]', file);  // Changed from files[index] to files[]
+  });
+
+  const response = await api.post(`/folders/${folderId}/upload/`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  });
+  return response.data;
+};
+
+export const getFolders = async () => {
   try {
-    const formData = new FormData();
-    formData.append("avatar", avatarFile);
-    
-    const response = await api.post("/users/avatar/", formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    });
+    const response = await api.get("/folders/all/");
     return response.data;
   } catch (error) {
-    console.error("Avatar Upload Error:", error);
     throw error;
   }
 };

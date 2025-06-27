@@ -16,7 +16,8 @@ from better_profanity import profanity
 from django.conf import settings
 from rest_framework.exceptions import AuthenticationFailed
 from django.core.files.uploadedfile import UploadedFile as DjangoUploadedFile
-
+from django.core.exceptions import ValidationError
+import re
 # Set up logging
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
@@ -115,3 +116,25 @@ def check_for_profanity(file: DjangoUploadedFile, file_name: str) -> bool:
     except Exception as e:
         logger.error(f"[Profanity] Error while checking for profanity: {e}")
         return False
+
+
+
+
+def validate_folder_name(value):
+    """
+    Validates that folder names:
+    - Are not empty
+    - Don't contain special characters
+    - Are not too long
+    """
+    if not value.strip():
+        raise ValidationError("Folder name cannot be empty")
+    
+    if len(value) > 255:
+        raise ValidationError("Folder name is too long (max 255 characters)")
+    
+    if not re.match(r'^[\w\-. ]+$', value):
+        raise ValidationError(
+            "Folder name contains invalid characters. "
+            "Only letters, numbers, spaces, hyphens, underscores and periods are allowed."
+        )

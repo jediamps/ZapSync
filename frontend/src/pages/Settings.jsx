@@ -1,51 +1,73 @@
 import React, { useState } from "react";
-import { Cloud, FolderShared, BarChart, Delete, Logout } from "@mui/icons-material";
+import { useOutletContext } from "react-router";
+import { Menu, ChevronDown } from 'lucide-react';
 
 const SettingsPage = () => {
   const [activeTab, setActiveTab] = useState("Appearance");
+  const [showMobileTabs, setShowMobileTabs] = useState(false);
+  const { toggleSidebar } = useOutletContext();
 
   const tabs = [
-    "Account", "Profile", "Security", "Appearance", "Notifications", "Billing", "Integrations"
+    "Preferences", "Privacy", "Security", "Appearance", 
+    "Notifications", "Billing", "Integrations"
   ];
+
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case "Account":
+      case "Preferences":
         return (
           <>
-            <h2 className="text-lg font-semibold mb-4">Account Settings</h2>
+            <h2 className="text-lg font-semibold mb-4">Preferences</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                <input type="email" placeholder="you@example.com" className="w-full border px-3 py-2 rounded" />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Default View</label>
+                <select className="w-full border px-3 py-2 rounded text-sm">
+                  <option>Dashboard</option>
+                  <option>Projects</option>
+                  <option>Recent Activity</option>
+                </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                <input type="tel" placeholder="+1234567890" className="w-full border px-3 py-2 rounded" />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Items Per Page</label>
+                <select className="w-full border px-3 py-2 rounded text-sm">
+                  <option>10</option>
+                  <option>25</option>
+                  <option>50</option>
+                </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Recovery Email</label>
-                <input type="email" placeholder="recovery@example.com" className="w-full border px-3 py-2 rounded" />
+                <label className="inline-flex items-center">
+                  <input type="checkbox" className="form-checkbox text-[#2E86AB]" />
+                  <span className="ml-2 text-sm text-gray-700">Show recent items on startup</span>
+                </label>
               </div>
             </div>
           </>
         );
-      case "Profile":
+      case "Privacy":
         return (
           <>
-            <h2 className="text-lg font-semibold mb-4">Profile Information</h2>
+            <h2 className="text-lg font-semibold mb-4">Privacy Settings</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                <input type="text" placeholder="John Doe" className="w-full border px-3 py-2 rounded" />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Data Sharing</label>
+                <select className="w-full border px-3 py-2 rounded text-sm">
+                  <option>Share anonymized usage data</option>
+                  <option>Do not share any data</option>
+                </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
-                <input type="text" placeholder="johndoe" className="w-full border px-3 py-2 rounded" />
+                <label className="inline-flex items-center">
+                  <input type="checkbox" className="form-checkbox text-[#2E86AB]" />
+                  <span className="ml-2 text-sm text-gray-700">Make profile discoverable</span>
+                </label>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
-                <textarea placeholder="Tell us about yourself..." className="w-full border px-3 py-2 rounded"></textarea>
+                <label className="inline-flex items-center">
+                  <input type="checkbox" className="form-checkbox text-[#2E86AB]" />
+                  <span className="ml-2 text-sm text-gray-700">Show activity status</span>
+                </label>
               </div>
             </div>
           </>
@@ -79,6 +101,24 @@ const SettingsPage = () => {
             <p className="text-sm text-gray-600 mb-6">Change how your public dashboard looks and feels.</p>
 
             <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Theme</label>
+              <div className="flex gap-4 mt-2">
+                {["Light", "Dark", "System"].map((theme) => (
+                  <button
+                    key={theme}
+                    className={`border rounded px-4 py-2 text-sm ${
+                      theme === "Light" ? "bg-white text-black" : 
+                      theme === "Dark" ? "bg-gray-800 text-white" : 
+                      "bg-gray-100 text-black"
+                    }`}
+                  >
+                    {theme}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-1">Brand color</label>
               <input type="color" defaultValue="#444CE7" className="w-16 h-10 border rounded" />
             </div>
@@ -102,19 +142,6 @@ const SettingsPage = () => {
                 <option>English (UK)</option>
                 <option>English (US)</option>
               </select>
-            </div>
-
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Cookie banner</label>
-              <p className="text-xs text-[#2E86AB] mb-2 cursor-pointer">View examples</p>
-              <div className="flex gap-4">
-                {["Default", "Simplified", "None"].map((option) => (
-                  <div key={option} className="border rounded p-3 text-center w-32 cursor-pointer">
-                    <div className="bg-gray-100 h-16 mb-2" />
-                    <p className="text-xs font-medium">{option}</p>
-                  </div>
-                ))}
-              </div>
             </div>
           </>
         );
@@ -145,63 +172,128 @@ const SettingsPage = () => {
           </>
         );
       case "Billing":
-        return <p className="text-sm text-gray-600">View your current subscription and billing history.</p>;
+        return (
+          <>
+            <h2 className="text-lg font-semibold mb-4">Billing Information</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+                <select className="w-full border px-3 py-2 rounded text-sm">
+                  <option>Credit Card ending in 4242</option>
+                  <option>PayPal</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Billing Cycle</label>
+                <select className="w-full border px-3 py-2 rounded text-sm">
+                  <option>Monthly</option>
+                  <option>Yearly (Save 20%)</option>
+                </select>
+              </div>
+            </div>
+          </>
+        );
       case "Integrations":
-        return <p className="text-sm text-gray-600">Configure and manage third-party integrations.</p>;
+        return (
+          <>
+            <h2 className="text-lg font-semibold mb-4">Third-Party Integrations</h2>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between border p-3 rounded">
+                <div>
+                  <h3 className="text-sm font-medium">Google Drive</h3>
+                  <p className="text-xs text-gray-500">Connect to your Google Drive account</p>
+                </div>
+                <button className="px-3 py-1 rounded border text-sm">Connect</button>
+              </div>
+              <div className="flex items-center justify-between border p-3 rounded">
+                <div>
+                  <h3 className="text-sm font-medium">Slack</h3>
+                  <p className="text-xs text-gray-500">Receive notifications in Slack</p>
+                </div>
+                <button className="px-3 py-1 rounded border text-sm">Connect</button>
+              </div>
+            </div>
+          </>
+        );
       default:
         return null;
     }
   };
 
-  return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-gray-50">
-      <aside className="w-full lg:w-60 h-auto lg:h-screen bg-[#2E86AB] text-white p-5">
-        <h1 className="text-2xl font-bold mb-8">ZapSync</h1>
-        <nav className="flex flex-col gap-6">
-          <a href="/dashboard" className="flex items-center gap-4 text-lg hover:text-blue-300 transition-colors">
-            <Cloud /> My Drive
-          </a>
-          <a href="#" className="flex items-center gap-4 text-lg hover:text-blue-300 transition-colors">
-            <FolderShared /> Shared Files
-          </a>
-          <a href="#" className="flex items-center gap-4 text-lg hover:text-blue-300 transition-colors">
-            <BarChart /> Statistics
-          </a>
-          <a href="#" className="flex items-center gap-4 text-lg hover:text-blue-300 transition-colors">
-            <Delete /> Trash
-          </a>
-          <a href="#" className="flex items-center gap-4 text-lg hover:text-red-400 mt-auto transition-colors">
-            <Logout /> Logout
-          </a>
-        </nav>
-      </aside>
+   return (
+    <>
+      {/* Header */}
+      <div className="mb-6 md:mb-8 flex items-center gap-4">
+        <button 
+          onClick={toggleSidebar}
+          className="text-gray-600 hover:text-[#2E86AB] transition-colors"
+        >
+          <Menu size={24} />
+        </button>
+        <h1 className="text-xl md:text-2xl font-semibold text-gray-800">Settings</h1>
+      </div>
 
-      <main className="flex-1 p-10">
-        <h1 className="text-2xl font-bold mb-6">Settings</h1>
-
-        <div className="flex space-x-4 border-b mb-8 overflow-x-auto">
-          {tabs.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`py-2 px-4 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === tab ? "border-[#2E86AB] text-[#2E86AB]" : "border-transparent text-gray-500 hover:text-[#2E86AB]"
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-
-        <section>
-          {renderTabContent()}
-          <div className="flex justify-end mt-8 space-x-4">
-            <button className="px-4 py-2 rounded border text-sm">Cancel</button>
-            <button className="px-4 py-2 rounded text-white bg-[#2E86AB] text-sm">Save changes</button>
+      {/* Mobile tabs dropdown */}
+      <div className="md:hidden mb-4 relative">
+        <button
+          onClick={() => setShowMobileTabs(!showMobileTabs)}
+          className="w-full flex justify-between items-center border rounded-md px-4 py-2 text-sm font-medium"
+        >
+          {activeTab}
+          <ChevronDown size={16} className={`transition-transform ${showMobileTabs ? 'rotate-180' : ''}`} />
+        </button>
+        {showMobileTabs && (
+          <div className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg">
+            {tabs.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => {
+                  setActiveTab(tab);
+                  setShowMobileTabs(false);
+                }}
+                className={`block w-full text-left px-4 py-2 text-sm ${
+                  activeTab === tab 
+                    ? 'bg-[#2E86AB] text-white' 
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
           </div>
-        </section>
-      </main>
-    </div>
+        )}
+      </div>
+
+      {/* Desktop tabs */}
+      <div className="hidden md:flex space-x-4 border-b mb-6 md:mb-8 overflow-x-auto">
+        {tabs.map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`py-2 px-4 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === tab 
+                ? "border-[#2E86AB] text-[#2E86AB]" 
+                : "border-transparent text-gray-500 hover:text-[#2E86AB]"
+            }`}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      {/* Content */}
+      <section className="bg-white rounded-lg p-4 md:p-6 shadow-sm">
+        {renderTabContent()}
+        <div className="flex flex-col-reverse md:flex-row justify-end gap-3 mt-6 md:mt-8">
+          <button className="px-4 py-2 rounded border text-sm hover:bg-gray-50 transition-colors">
+            Cancel
+          </button>
+          <button className="px-4 py-2 rounded text-white bg-[#2E86AB] text-sm hover:bg-[#1E6F8C] transition-colors">
+            Save changes
+          </button>
+        </div>
+      </section>
+    </>
   );
 };
 

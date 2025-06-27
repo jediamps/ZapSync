@@ -148,13 +148,13 @@ const ProfilePage = () => {
   }
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <>
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8 flex items-center gap-4">
           <button 
             onClick={toggleSidebar}
-            className="text-gray-600 hover:text-[#2E86AB] transition-colors lg:hidden"
+            className="text-gray-600 hover:text-[#2E86AB] transition-colors"
           >
             <Menu size={24} />
           </button>
@@ -333,7 +333,7 @@ const ProfilePage = () => {
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
