@@ -1,50 +1,129 @@
-import { Cloud, FolderShared, BarChart, Delete, Logout } from "@mui/icons-material";
+import { Cloud, FolderOutput, BarChart, Trash2, X, Bell, Star, ChevronDown } from "lucide-react";
+import { useState } from "react";
+import { useProfile } from "../hooks/UseProfile";
+import LoadingSpinner from "./LoadingSpinner"; 
 
-const Sidebar = ({ isOpen, onClose }) => {
+const Sidebar = ({ isOpen, toggleSidebar, setShowLogoutConfirm }) => {
+  const { profile, loading, error } = useProfile();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const getInitials = (name) => {
+    if (!name) return "ZP"; // Default initials if name is not available
+    return name
+      .split(' ')
+      .map(part => part[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2); 
+  };
+
+  if (error) {
+    console.error("Error loading profile:", error);
+    // You could render an error state here if needed
+  }
+
   return (
-    <>
-      {/* Overlay for mobile */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-20 backdrop-blur-sm bg-white/10 lg:hidden"
-          onClick={onClose}
-        ></div>
-      )}
+    <aside
+      className={`fixed inset-y-0 left-0 z-30 h-screen bg-[var(--color-primary)] text-white flex flex-col p-5 transform transition-all duration-300 ease-in-out ${
+        isOpen ? 'translate-x-0 w-64' : '-translate-x-full lg:translate-x-0 lg:w-20'
+      }`}
+    >
+      <div className="flex items-center justify-between mb-8 overflow-hidden">
+        <h1 className={`text-2xl font-bold whitespace-nowrap ${!isOpen && 'lg:hidden'}`}>ZapSync</h1>
+        <button 
+          onClick={toggleSidebar} 
+          className="p-1 rounded-full hover:bg-white/10 lg:hidden"
+          aria-label="Toggle sidebar"
+        >
+          <X size={20} />
+        </button>
+      </div>
 
-      {/* Sidebar */}
-      <aside
-        className={`fixed lg:relative inset-y-0 left-0 z-30 w-54 h-full bg-[#2E86AB] text-white flex flex-col p-5 transform transition-transform duration-300 ease-in-out ${
-          isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-        }`}
-      >
-        <h1 className="text-2xl font-bold mb-8">ZapSync</h1>
+      <nav className="flex flex-col gap-4 flex-1">
+        {/* Navigation items remain the same */}
+        {[
+          { icon: Cloud, text: "My Drive", href: "/dashboard" },
+          { icon: FolderOutput, text: "Shared Files", href: "/shared" },
+          { icon: Star, text: "Starred", href: "/starred" },
+          { icon: Bell, text: "Notifications", href: "/notifications" },
+          { icon: BarChart, text: "Statistics", href: "/statistics" },
+          { icon: Trash2, text: "Trash", href: "/trash" },
+        ].map((item, index) => (
+          <a
+            key={index}
+            href={item.href}
+            className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/10 transition-colors"
+          >
+            <item.icon size={20} />
+            <span className={`${!isOpen && 'lg:hidden'}`}>{item.text}</span>
+          </a>
+        ))}
+      </nav>
 
-        <nav className="flex flex-col gap-6">
-          <a href="/dashboard" className="flex items-center gap-4 text-lg hover:text-blue-300 transition-colors">
-            <Cloud /> My Drive
-          </a>
-          <a href="#" className="flex items-center gap-4 text-lg hover:text-blue-300 transition-colors">
-            <FolderShared /> Shared Files
-          </a>
-          <a href="#" className="flex items-center gap-4 text-lg hover:text-blue-300 transition-colors">
-            <BarChart /> Statistics
-          </a>
-          <a href="#" className="flex items-center gap-4 text-lg hover:text-blue-300 transition-colors">
-            <Delete /> Trash
-          </a>
-          <a href="#" className="flex items-center gap-4 text-lg hover:text-red-400 mt-auto transition-colors">
-            <Logout /> Logout
-          </a>
-        </nav>
+      <div className="mt-auto">
+        <div 
+          className={`flex items-center ${isOpen ? 'gap-3' : 'lg:justify-center'} p-2 rounded-lg hover:bg-white/10 transition-colors cursor-pointer`}
+          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+          aria-expanded={isDropdownOpen}
+          aria-label="User menu"
+        >
+          {loading ? (
+            <div className="w-10 h-10 flex items-center justify-center">
+              <LoadingSpinner size="small" />
+            </div>
+          ) : (
+            <>
+              <div className="w-10 h-10 rounded-full bg-white text-[var(--color-primary)] flex items-center justify-center font-bold flex-shrink-0">
+                {getInitials(profile?.fullname)}
+              </div>
+              <div className={`flex-1 min-w-0 ${!isOpen && 'lg:hidden'}`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium truncate">
+                      {profile?.fullname || "User"}
+                    </p>
+                    <p className="text-xs text-white/80 truncate">
+                      {profile?.email || "user@example.com"}
+                    </p>
+                  </div>
+                  <ChevronDown 
+                    size={16} 
+                    className={`transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`}
+                  />
+                </div>
+              </div>
+              {!isOpen && (
+                <ChevronDown 
+                  size={16} 
+                  className={`lg:block hidden transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`}
+                />
+              )}
+            </>
+          )}
+        </div>
 
-        <div className="mt-auto text-sm">
-          <p>Storage</p>
-          <div className="w-full bg-gray-300 rounded-full h-2 mt-1">
-            <div className="bg-white h-2 rounded-full" style={{ width: "75%" }}></div>
+        {/* Dropdown Menu */}
+        <div 
+          className={`overflow-hidden transition-all duration-300 ease-in-out ${
+            isDropdownOpen ? 'max-h-40' : 'max-h-0'
+          }`}
+          aria-hidden={!isDropdownOpen}
+        >
+          <div className="py-1">
+            <a href="/profile" className="block px-4 py-2 text-sm hover:bg-white/10">Profile</a>
+            <a href="/settings" className="block px-4 py-2 text-sm hover:bg-white/10">Settings</a>
+            <a href="/support" className="block px-4 py-2 text-sm hover:bg-white/10">Support</a>
+            <button 
+              onClick={() => setShowLogoutConfirm(true)}
+              className="w-full text-left block px-4 py-2 text-sm hover:bg-white/10 text-red-300"
+              aria-label="Logout"
+            >
+              Logout
+            </button>
           </div>
         </div>
-      </aside>
-    </>
+      </div>
+    </aside>
   );
 };
 

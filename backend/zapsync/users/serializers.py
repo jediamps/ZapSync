@@ -23,7 +23,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        exclude = ['password', 'password_hash', 'user_permissions', 'groups']
+        exclude = ['password', 'user_permissions', 'groups']
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
