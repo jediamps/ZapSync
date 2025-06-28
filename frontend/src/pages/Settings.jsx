@@ -33,7 +33,7 @@ const SettingsPage = () => {
     "Preferences", "Privacy", "Security", "Appearance", 
     "Notifications", "Billing", "Integrations"
   ];
-
+  
   // Check for changes
   useEffect(() => {
     const changesExist = 
@@ -186,7 +186,6 @@ const SettingsPage = () => {
             </button>
           ))}
         </div>
-
         {/* Content */}
         <section className="bg-[var(--color-bg)] rounded-lg p-4 md:p-6 shadow-sm border border-[var(--color-border)]">
           {renderTabContent()}
@@ -228,5 +227,6 @@ const SettingsPage = () => {
     </div>
   );
 };
+
 
 export default SettingsPage;
