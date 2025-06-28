@@ -43,11 +43,11 @@ const Sidebar = ({ isOpen, toggleSidebar, setShowLogoutConfirm }) => {
         {/* Navigation items remain the same */}
         {[
           { icon: Cloud, text: "My Drive", href: "/dashboard" },
-          { icon: FolderOutput, text: "Shared Files", href: "#" },
-          { icon: Star, text: "Starred", href: "#" },
-          { icon: Bell, text: "Notifications", href: "#" },
-          { icon: BarChart, text: "Statistics", href: "#" },
-          { icon: Trash2, text: "Trash", href: "#" },
+          { icon: FolderOutput, text: "Shared Files", href: "/shared" },
+          { icon: Star, text: "Starred", href: "/starred" },
+          { icon: Bell, text: "Notifications", href: "/notifications" },
+          { icon: BarChart, text: "Statistics", href: "/statistics" },
+          { icon: Trash2, text: "Trash", href: "/trash" },
         ].map((item, index) => (
           <a
             key={index}
@@ -112,7 +112,7 @@ const Sidebar = ({ isOpen, toggleSidebar, setShowLogoutConfirm }) => {
           <div className="py-1">
             <a href="/profile" className="block px-4 py-2 text-sm hover:bg-white/10">Profile</a>
             <a href="/settings" className="block px-4 py-2 text-sm hover:bg-white/10">Settings</a>
-            <a href="#" className="block px-4 py-2 text-sm hover:bg-white/10">Support</a>
+            <a href="/support" className="block px-4 py-2 text-sm hover:bg-white/10">Support</a>
             <button 
               onClick={() => setShowLogoutConfirm(true)}
               className="w-full text-left block px-4 py-2 text-sm hover:bg-white/10 text-red-300"

@@ -28,4 +28,16 @@
     --color-text: #f8f9fa;
     --color-text-secondary: #9ca3af;
     --color-border: #374151;
+    --color-primary-light: color-mix(in srgb, var(--color-primary) 20%, white);
   }
+
+  /* System theme preference */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-bg: #1a1a1a;
+    --color-bg-secondary: #2d2d2d;
+    --color-text: #f8f9fa;
+    --color-text-secondary: #9ca3af;
+    --color-border: #374151;
+  }
+}

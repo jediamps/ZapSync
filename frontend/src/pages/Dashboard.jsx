@@ -258,7 +258,7 @@ const Dashboard = () => {
               <div className="relative">
                 <button 
                   onClick={() => setShowUploadDropdown(!showUploadDropdown)}
-                  className="bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-[#1d6a8f] transition-colors"
+                  className="bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-[var(--color-primary-light)] transition-colors"
                 >
                   <Upload size={18} /> Upload
                 </button>
@@ -290,7 +290,7 @@ const Dashboard = () => {
                   setShowFolderModal(true);
                   setShowUploadDropdown(false);
                 }}
-                className="bg-green-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-green-700 transition-colors"
+                className="bg-[var(--color-primary-light)] text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-[var(--color-primary)] hover:text-white transition-colors"
               >
                 <Plus size={18} /> Create Folder
               </button>
@@ -346,7 +346,7 @@ const Dashboard = () => {
                   <div className="flex justify-center">
                     <button
                       onClick={() => setShowAllFolders(!showAllFolders)}
-                      className="text-[#A1D2CE] hover:text-[#78C0B0] font-medium flex items-center gap-1 transition-colors"
+                      className="text-[var(--color-primary-light)] hover:text-[#78C0B0] font-medium flex items-center gap-1 transition-colors"
                     >
                       {showAllFolders ? (
                         <>
@@ -409,7 +409,7 @@ const Dashboard = () => {
                 <div className="flex justify-center p-4 border-t border-gray-100">
                   <button
                     onClick={() => setShowAllFolders(!showAllFolders)}
-                    className="text-[#A1D2CE] hover:text-[#78C0B0] font-medium flex items-center gap-1 transition-colors"
+                    className="text-[var(--color-primary-light)] hover:text-[#78C0B0] font-medium flex items-center gap-1 transition-colors"
                   >
                     {showAllFolders ? 'Show Less' : `Show More (${folders.length - 6} more)`}
                   </button>
@@ -425,7 +425,7 @@ const Dashboard = () => {
                   setFolderModalType('create');
                   setShowFolderModal(true);
                 }}
-                className="mt-4 bg-[#A1D2CE] text-white px-4 py-2 rounded-lg inline-flex items-center gap-2 hover:bg-[#78C0B0] transition-colors"
+                className="mt-4 bg-[var(--color-primary-light)] text-white px-4 py-2 rounded-lg inline-flex items-center gap-2 hover:bg-[#78C0B0] transition-colors"
               >
                 <Plus size={16} /> Create Folder
               </button>

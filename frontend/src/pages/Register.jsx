@@ -4,7 +4,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ReCAPTCHA from "react-google-recaptcha";
 import { registerUser } from "../services/api";
-import { getDeviceInfo } from "../../utils/UserDeviceInfo";
+import { getDeviceInfo } from "../utils/UserDeviceInfo";
 
 export default function Register() {
   const RECAPTCHA_ID = import.meta.env.VITE_RECAPTCHA_ID;

@@ -9,6 +9,13 @@ import MainLayout from "./layouts/MainLayout";
 import ProfilePage from "./pages/ProfilePage";
 import { useEffect } from "react";
 import './styles/theme.css';
+import { DEFAULT_PRIMARY_COLOR, DEFAULT_THEME } from "./constants/theme";
+import Starred from "./pages/Starred";
+import Trash from "./pages/Trash";
+import Support from "./pages/Support";
+import Notifications from "./pages/Notifications";
+import Statistics from "./pages/Statistics";
+import Shared from "./pages/Shared";
 
 // Helper function to calculate hover color
 const getHoverColor = (hex) => {
@@ -27,23 +34,23 @@ const getHoverColor = (hex) => {
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 };
 
+
+
 function App() {
   useEffect(() => {
-    // Initialize theme from localStorage
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    document.documentElement.setAttribute('data-theme', savedTheme);
+    // Load saved theme or default
+    const savedTheme = localStorage.getItem('theme') || DEFAULT_THEME;
+    const savedColor = localStorage.getItem('primaryColor') || DEFAULT_PRIMARY_COLOR;
+    const savedLight = localStorage.getItem('primaryLight')
     
-    // Initialize primary color from localStorage
-    const savedColor = localStorage.getItem('primaryColor') || '#2E86AB';
+    // Apply theme immediately
+    document.documentElement.setAttribute('data-theme', savedTheme);
     document.documentElement.style.setProperty('--color-primary', savedColor);
+    document.documentElement.style.setProperty('--color-primary-light', savedLight);
     document.documentElement.style.setProperty(
       '--color-primary-hover', 
       getHoverColor(savedColor)
     );
-    
-    // Calculate and set primary light color (20% opacity of primary)
-    const primaryLight = `${savedColor}33`; // 33 = 20% opacity in hex
-    document.documentElement.style.setProperty('--color-primary-light', primaryLight);
   }, []);
 
   return (
@@ -59,6 +66,12 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/starred" element={<Starred />} />
+            <Route path="/trash" element={<Trash />} />
+            <Route path="/support" element={<Support />} />
+            <Route path="/notifications" element={<Notifications />} />
+            <Route path="/statistics" element={<Statistics />} />
+            <Route path="/shared" element={<Shared />} />
           </Route>
         </Route>
         
