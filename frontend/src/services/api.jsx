@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:8000/api"; // Change this to match your backend URL
+const BASE_URL = "http://localhost:8000/api"; 
+// const BASE_URL = "https://zapsync.onrender.com";
 
 // Create axios instance
 const api = axios.create({
