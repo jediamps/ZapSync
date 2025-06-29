@@ -97,12 +97,12 @@ WSGI_APPLICATION = 'zapsync.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'zapsync',
         'USER': 'zapsync_user',
-        'PASSWORD': 'Final@2025',
-        'HOST': 'localhost',
-        'PORT': '3306',
+        'PASSWORD': '9mhLO2DH54iej8MpzFmrkMD6luiGNPAl',
+        'HOST': 'dpg-d1gp0n7fte5s738uodeg-a.oregon-postgres.render.com',
+        'PORT': '5432',
     }
 }
 

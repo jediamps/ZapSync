@@ -9,7 +9,7 @@ class CustomUserManager(BaseUserManager):
             raise ValueError('The Email field is required')
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
-        user.set_password(password)  # hashes password
+        user.set_password(password)
         user.save(using=self._db)
         return user
 
@@ -20,31 +20,24 @@ class CustomUserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
-    # 🧑‍💻 Basic Info
+    # Basic Info
     fullname = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
-    phone = models.CharField(max_length=20, blank=True)
+    phone = models.CharField(max_length=20, blank=True, null=True)
     google_id = models.CharField(max_length=255, blank=True, null=True)
 
-    # 🌍 Location Info
-    latitude = models.CharField(max_length=50, blank=True, null=True)
-    longitude = models.CharField(max_length=50, blank=True, null=True)
-    ip_address = models.GenericIPAddressField(blank=True, null=True)
-    city = models.CharField(max_length=100, blank=True)
-    country = models.CharField(max_length=100, blank=True)
+    # Location Info (using JSONField for flexibility)
+    location_data = models.JSONField(default=dict, blank=True, null=True)
+    # Contains: latitude, longitude, ip_address, city, country
 
-    # 📱 Device & Browser Info
-    device_type = models.CharField(max_length=100, blank=True)
-    browser = models.CharField(max_length=100, blank=True)
-    screen_width = models.CharField(max_length=20, blank=True)
-    screen_height = models.CharField(max_length=20, blank=True)
-    userAgent = models.TextField(blank=True)
-    platform = models.CharField(max_length=100, blank=True)
+    # Device Info (using JSONField for flexibility)
+    device_info = models.JSONField(default=dict, blank=True, null=True)
+    # Contains: device_type, browser, screen_width, screen_height, userAgent, platform
 
-    # 🔒 reCAPTCHA
-    captcha_token = models.TextField(blank=True)
+    # reCAPTCHA
+    captcha_token = models.TextField(blank=True, null=True)
 
-    # 📅 Timestamps
+    # Timestamps
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -59,3 +52,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+
+    def save(self, *args, **kwargs):
+        self.updated_at = timezone.now()
+        super().save(*args, **kwargs)

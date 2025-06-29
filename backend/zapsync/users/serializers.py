@@ -6,19 +6,16 @@ from django.contrib.auth.hashers import make_password
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
-
+    
     class Meta:
         model = User
-        fields = '__all__'
-
+        fields = ['email', 'password', 'fullname', 'phone', 'google_id', 
+                 'location_data', 'device_info', 'captcha_token']
+        
     def create(self, validated_data):
-        # Hash the password and assign to password field
-        raw_password = validated_data.pop('password')
-        validated_data['password'] = make_password(raw_password)
-
-        # Create the user with all the other fields
-        user = User.objects.create(**validated_data)
-        return user
+        # Hash the password
+        validated_data['password'] = make_password(validated_data['password'])
+        return User.objects.create(**validated_data)
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
