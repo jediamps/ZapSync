@@ -29,7 +29,10 @@ SECRET_KEY = 'django-insecure-4_t-%)p0jo$h+b9dsmpa&875-hqj48xdf(zu!1kwb1@@6wgmcg
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "https://zapsync.onrender.com",
+    "https://zapsync-1.onrender.com"
+]
 
 AUTH_USER_MODEL = 'users.User'
 
@@ -39,7 +42,8 @@ AUTH_USER_MODEL = 'users.User'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://localhost:3000",
-    "https://zapsync.onrender.com"
+    "https://zapsync.onrender.com",
+    "https://zapsync-1.onrender.com"
 ]
 
 
