@@ -30,8 +30,10 @@ SECRET_KEY = 'django-insecure-4_t-%)p0jo$h+b9dsmpa&875-hqj48xdf(zu!1kwb1@@6wgmcg
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    "https://zapsync.onrender.com",
-    "https://zapsync-1.onrender.com"
+    'zapsync.onrender.com',  
+    'zapsync-1.onrender.com', 
+    'localhost',
+    '127.0.0.1',
 ]
 
 AUTH_USER_MODEL = 'users.User'
