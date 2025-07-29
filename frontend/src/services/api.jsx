@@ -1,7 +1,7 @@
 import axios from "axios";
 
-// const BASE_URL = "http://localhost:8000/api"; 
-const BASE_URL = "https://zapsync.onrender.com/api";
+const BASE_URL = "http://localhost:5000/api"; 
+// const BASE_URL = "https://zapsync.onrender.com/api";
 
 // Create axios instance
 const api = axios.create({
@@ -38,7 +38,7 @@ api.interceptors.response.use(
 // Function to register a new user
 export const registerUser = async (userData) => {
   try {
-    const response = await api.post("/users/register/", userData);
+    const response = await api.post("/auth/register", userData);
     return response.data;
   } catch (error) {
     console.error("Registration Error:", error);
@@ -52,7 +52,7 @@ export const loginUser = async (email, password, latitude, longitude) => {
     const locationRes = await axios.get("https://ipapi.co/json/");
     const { ip, country_name, city, region } = locationRes.data;
 
-    const response = await api.post("/users/login/", {
+    const response = await api.post("/auth/login/", {
       email,
       password,
       latitude,
@@ -99,7 +99,7 @@ export const uploadFile = async (file, description) => {
   formData.append("file", file);
   formData.append("description", description);
 
-  const response = await api.post("/files/upload/", formData, {
+  const response = await api.post("/files/upload", formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
@@ -110,7 +110,7 @@ export const uploadFile = async (file, description) => {
 
 export const getFiles = async () => {
   try {
-    const response = await api.get("/files/all/");
+    const response = await api.get("/files/all");
     return response.data;
   } catch (error) {
     throw error;
@@ -137,7 +137,7 @@ export const getStorageUsage = async () => {
 
 export const getUserProfile = async () => {
   try {
-    const response = await api.get("/users/profile/");
+    const response = await api.get("/auth/me");
     return response.data;
   } catch (error) {
     throw error;
@@ -146,7 +146,7 @@ export const getUserProfile = async () => {
 
 export const updateUserProfile = async (profileData) => {
   try {
-    const response = await api.put("/users/profile/", profileData);
+    const response = await api.put("/auth/profile", profileData);
     return response.data;
   } catch (error) {
     console.error("Update Profile Error:", error);
@@ -157,7 +157,7 @@ export const updateUserProfile = async (profileData) => {
 
 
 export const createFolder = async (folderData) => {
-  const response = await api.post('/folders/create/', folderData);
+  const response = await api.post('/folders/create', folderData);
   return response.data;
 };
 
@@ -168,7 +168,7 @@ export const uploadFilesToFolder = async (folderId, files) => {
     formData.append('files[]', file);  // Changed from files[index] to files[]
   });
 
-  const response = await api.post(`/folders/${folderId}/upload/`, formData, {
+  const response = await api.post(`/folders/${folderId}/upload`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data'
     }
@@ -178,9 +178,37 @@ export const uploadFilesToFolder = async (folderId, files) => {
 
 export const getFolders = async () => {
   try {
-    const response = await api.get("/folders/all/");
+    const response = await api.get("/folders/all");
     return response.data;
   } catch (error) {
     throw error;
+  }
+};
+
+// Group-related API functions
+export const getAvailableGroups = async () => {
+  try {
+    const response = await api.get('/groups/available');
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.error || error.message;
+  }
+};
+
+export const joinGroupWithToken = async (token) => {
+  try {
+    const response = await api.post('/groups/join', { token });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.error || error.message;
+  }
+};
+
+export const joinGroup = async (groupId) => {
+  try {
+    const response = await api.post(`/groups/${groupId}/join`);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.error || error.message;
   }
 };

@@ -15,6 +15,7 @@ export default function Register() {
   const [phone, setPhone] = useState("");
   const [captchaToken, setCaptchaToken] = useState(null);
   const [deviceInfo, setDeviceInfo] = useState(null);
+  const [role, setRole] = useState("student"); 
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -38,6 +39,7 @@ export default function Register() {
         email,
         password: password,
         phone,
+        role,
         captcha_token: captchaToken,
         device_type: deviceInfo.deviceType,
         browser: deviceInfo.browser,
@@ -46,10 +48,8 @@ export default function Register() {
         userAgent: deviceInfo.userAgent,
         platform: deviceInfo.platform,
       };
-      console.log(userData)
       
       const data = await registerUser(userData);
-      console.log(data)
       
       toast.success("Registration successful!");
       setTimeout(() => navigate("/"), 2000);
@@ -105,6 +105,16 @@ export default function Register() {
             className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
           />
+
+          <select
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          >
+            <option value="student">Student</option>
+            <option value="staff">Staff</option>
+          </select>
           
           {/* CAPTCHA Verification */}
           <ReCAPTCHA

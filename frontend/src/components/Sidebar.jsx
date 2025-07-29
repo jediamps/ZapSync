@@ -1,4 +1,4 @@
-import { Cloud, FolderOutput, BarChart, Trash2, X, Bell, Star, ChevronDown } from "lucide-react";
+import { Cloud, FolderOutput, BarChart, Trash2, X, Bell, Star, ChevronDown, Users } from "lucide-react";
 import { useState } from "react";
 import { useProfile } from "../hooks/UseProfile";
 import LoadingSpinner from "./LoadingSpinner"; 
@@ -43,7 +43,7 @@ const Sidebar = ({ isOpen, toggleSidebar, setShowLogoutConfirm }) => {
         {/* Navigation items remain the same */}
         {[
           { icon: Cloud, text: "My Drive", href: "/dashboard" },
-          { icon: FolderOutput, text: "Shared Files", href: "/shared" },
+          { icon: Users, text: "Groups", href: "/groups" },
           { icon: Star, text: "Starred", href: "/starred" },
           { icon: Bell, text: "Notifications", href: "/notifications" },
           { icon: BarChart, text: "Statistics", href: "/statistics" },

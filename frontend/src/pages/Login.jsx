@@ -22,7 +22,7 @@ export default function Login() {
       toast.success("Login successful!");
 
       // Store token or user data
-      localStorage.setItem("zapsync_token", data.access);
+      localStorage.setItem("zapsync_token", data.token);
 
 
       // Redirect to dashboard

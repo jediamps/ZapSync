@@ -15,7 +15,7 @@ import Trash from "./pages/Trash";
 import Support from "./pages/Support";
 import Notifications from "./pages/Notifications";
 import Statistics from "./pages/Statistics";
-import Shared from "./pages/Shared";
+import Groups from "./pages/Groups";
 
 // Helper function to calculate hover color
 const getHoverColor = (hex) => {
@@ -71,7 +71,7 @@ function App() {
             <Route path="/support" element={<Support />} />
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/statistics" element={<Statistics />} />
-            <Route path="/shared" element={<Shared />} />
+            <Route path="/groups" element={<Groups />} />
           </Route>
         </Route>
         

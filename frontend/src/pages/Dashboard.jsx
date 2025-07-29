@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from "react";
-import { Upload, Search, List, Grid, Menu, Folder, Plus } from "lucide-react";
+import { Upload, Search, List, Grid, Menu, Folder, Plus, Send, MessageSquare, Sparkles } from "lucide-react";
 import FolderCard from "../components/FolderCard";
 import RecentFiles from "../components/RecentFiles";
 import FileActivityCalendar from "../components/FileActivityCalendar";
@@ -15,6 +15,7 @@ import {
 import { toast } from "react-toastify";
 import { useOutletContext } from "react-router";
 import FolderListCard from "../components/FolderListCard";
+import { motion, AnimatePresence } from "framer-motion";
 
 const Dashboard = () => {
   // File states
@@ -45,6 +46,17 @@ const Dashboard = () => {
   const [folders, setFolders] = useState([]);
   const [filteredFiles, setFilteredFiles] = useState([]);
   const [storage, setStorage] = useState({ used: 0, total: 0 });
+
+
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState([
+    {
+      id: 1,
+      text: "Hi! I'm your Zapsync assistant. Ask me anything like 'Dr. Amoako lecture notes Week 3'",
+      sender: 'bot'
+    }
+  ]);
+  const [currentMessage, setCurrentMessage] = useState('');
 
   // Refs
   const fileInputRef = useRef(null);
@@ -193,13 +205,41 @@ const Dashboard = () => {
     }
   };
 
+  const handleChatSend = () => {
+    if (!currentMessage.trim()) return;
+    
+    const userMessage = {
+      id: chatMessages.length + 1,
+      text: currentMessage,
+      sender: 'user'
+    };
+    
+    setChatMessages([...chatMessages, userMessage]);
+    setCurrentMessage('');
+    
+    // Simulate API call with loading state
+    setTimeout(() => {
+      setChatMessages(prev => [
+        ...prev,
+        {
+          id: prev.length + 2,
+          text: `I found these files:\n- Week3_notes_final.docx\n- CS101_Lecture3.pdf\n- Dr_Amoako_Week3_Summary.docx\n\nTry asking "Show me PDFs only" to filter further!`,
+          sender: 'bot'
+        }
+      ]);
+    }, 1000);
+  };
+
   return (
     <>
       {/* Header with search */}
+      <div className="mb-6 flex flex-col gap-4">
       <div className="mb-6 flex items-center gap-4">
         <button className="text-gray-600" onClick={toggleSidebar}>
           <Menu size={24} />
         </button>
+
+        {/* Regular Search Bar - Always visible */}
         <div className="relative flex-1 max-w-md">
           <input 
             type="text" 
@@ -210,6 +250,100 @@ const Dashboard = () => {
           />
           <Search size={18} className="absolute left-3 top-3 text-gray-500" />
         </div>
+
+        {/* Smart Search Toggle Button */}
+        <motion.button
+          onClick={() => setIsChatOpen(!isChatOpen)}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm bg-gradient-to-r from-[var(--color-primary-light)] to-[var(--color-primary)] text-white shadow-md"
+        >
+          <motion.div
+            animate={{ 
+              y: [0, -3, 0],
+              rotate: [0, 5, -5, 0]
+            }}
+            transition={{
+              repeat: Infinity,
+              duration: 2,
+              ease: "easeInOut"
+            }}
+          >
+            <Sparkles size={16} />
+          </motion.div>
+          <span>Smart Search</span>
+        </motion.button>
+      </div>
+
+      {/* Chatbot Panel */}
+      <AnimatePresence>
+        {isChatOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className="bg-white rounded-lg shadow-lg border border-gray-200 mt-2 overflow-hidden"
+          >
+            {/* Chat messages */}
+            <div className="max-h-60 overflow-y-auto p-4 space-y-3">
+              {chatMessages.map((msg, index) => (
+                <motion.div
+                  key={msg.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    className={`max-w-xs md:max-w-md rounded-lg px-4 py-2 ${
+                      msg.sender === 'user' 
+                        ? 'bg-[var(--color-primary)] text-white' 
+                        : 'bg-gray-100 text-gray-800'
+                    }`}
+                  >
+                    {msg.text}
+                  </motion.div>
+                </motion.div>
+              ))}
+            </div>
+            
+            {/* Chat input */}
+            <motion.div 
+              className="border-t border-gray-200 p-3 flex items-center gap-2"
+              layout
+            >
+              <motion.input
+                type="text"
+                value={currentMessage}
+                onChange={(e) => setCurrentMessage(e.target.value)}
+                placeholder="Ask about files (e.g. 'Dr. Amoako lecture notes Week 3')"
+                className="flex-1 border rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && currentMessage.trim()) {
+                    handleChatSend();
+                  }
+                }}
+                whileFocus={{ scale: 1.02 }}
+              />
+              <motion.button
+                disabled={!currentMessage.trim()}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                className={`p-2 rounded-full ${
+                  currentMessage.trim()
+                    ? 'text-[var(--color-primary)] hover:bg-gray-100'
+                    : 'text-gray-400'
+                }`}
+                onClick={handleChatSend}
+              >
+                <Send size={18} />
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       </div>
 
       {/* Main content */}
