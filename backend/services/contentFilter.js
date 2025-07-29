@@ -1,4 +1,29 @@
-const badWords = require('bad-words'); // Basic profanity filter
+const axios = require('axios');
+const fs = require('fs');
+const util = require('util');
+const path = require('path');
+
+// Configure logging
+const logDir = path.join(__dirname, '../logs');
+if (!fs.existsSync(logDir)) {
+  fs.mkdirSync(logDir);
+}
+const logFile = fs.createWriteStream(path.join(logDir, 'content_filter.log'), { flags: 'a' });
+
+// Enhanced logging function
+function logRequest(word, result, source) {
+  const timestamp = new Date().toISOString();
+  const logEntry = JSON.stringify({
+    timestamp,
+    source,
+    word,
+    result,
+    confidence: result?.confidence || null
+  }) + '\n';
+  
+  logFile.write(logEntry);
+}
+
 const malwarePatterns = [
   /eval\(.*\)/,
   /<script>.*<\/script>/,
@@ -7,24 +32,58 @@ const malwarePatterns = [
   /base64_decode/
 ];
 
+const DJANGO_API_URL = 'http://127.0.0.1:8000/filter/predict/';
+
 // Profanity Check
 exports.checkForProfanity = async (text) => {
-  const filter = new badWords();
-  return filter.isProfane(text);
+  try {
+    const words = text.toLowerCase()
+      .replace(/[^\w\s]/g, ' ')
+      .split(/\s+/)
+      .filter(word => word.length > 2);
+
+    for (const word of words) {
+      const result = await checkWordWithDjangoAPI(word, 'file-upload');
+      if (result.should_reject) {
+        return {
+          isProfane: true,
+          offendingWord: word,
+          confidence: result.confidence
+        };
+      }
+    }
+    return { isProfane: false };
+  } catch (error) {
+    console.error('Profanity check error:', error);
+    return { isProfane: false };
+  }
 };
+
+// API Request Helper
+async function checkWordWithDjangoAPI(word, source = 'unknown') {
+  try {
+    const response = await axios.post(DJANGO_API_URL, { 
+      text: word 
+    }, {
+      headers: { 'Content-Type': 'application/json' },
+      timeout: 5000 // 5 second timeout
+    });
+    
+    logRequest(word, response.data, source);
+    return response.data;
+  } catch (error) {
+    logRequest(word, { error: error.message }, source);
+    throw error;
+  }
+}
 
 // Malware Pattern Detection
 exports.scanForMalware = async (text) => {
   return malwarePatterns.some(pattern => pattern.test(text));
 };
 
-// Image Analysis (Placeholder for actual implementation)
+// Image Analysis
 exports.analyzeImage = async (imageBuffer) => {
-  // In a real implementation, you would:
-  // 1. Use TensorFlow.js for client-side analysis
-  // 2. Or call an API like Google Vision AI
-  // 3. Or use a pre-trained model
-  
   return {
     isMeme: false,
     isAcademic: true,

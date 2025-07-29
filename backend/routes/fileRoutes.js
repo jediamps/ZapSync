@@ -1,12 +1,18 @@
 const express = require('express');
 const router = express.Router();
 const fileController = require('../controllers/fileController');
-const upload = require('../middleware/uploadMiddleware');
+const { upload, analyzeFileContent } = require('../middleware/uploadMiddleware');
 const { protect } = require('../middleware/authMiddleware');
 
 // File operations
-router.post('/upload', protect, upload.single('file'), fileController.uploadFile);
-router.get('/', protect, fileController.getFiles);
+router.post('/upload', 
+  protect,
+  upload.single('file'),
+  analyzeFileContent,
+  fileController.uploadFile
+);
+
+router.get('/all', protect, fileController.getFiles);
 router.get('/search', protect, fileController.searchFiles);
 
 module.exports = router;

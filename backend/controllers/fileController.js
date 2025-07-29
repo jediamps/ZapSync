@@ -1,6 +1,9 @@
 const File = require('../models/File');
 const { uploadToCloudinary } = require('../config/cloudinary');
 const path = require('path');
+const dotenv = require('dotenv');
+
+dotenv.config();
 
 // @desc    Upload a file
 // @route   POST /api/files/upload
