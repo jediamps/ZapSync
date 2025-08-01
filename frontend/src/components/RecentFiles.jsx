@@ -25,7 +25,7 @@ const RecentFiles = ({ file, viewMode = 'grid', showAll = false, isGridItem = fa
           <div className="min-w-0">
             <h3 className="font-medium text-gray-800 truncate">{file.name}</h3>
             <p className="text-sm text-gray-500">
-              {file.size} • {new Date(file.uploadedAt).toLocaleDateString()}
+              {file.size} • {new Date(file.updatedAt).toLocaleDateString()}
             </p>
           </div>
         </div>
@@ -76,7 +76,7 @@ const RecentFiles = ({ file, viewMode = 'grid', showAll = false, isGridItem = fa
         <div className="flex justify-between items-start">
           <div className="flex-1 min-w-0">
             <p className="font-medium text-gray-800 truncate">{file.name}</p>
-            <p className="text-xs text-gray-500 mt-1">{file.size} • {new Date(file.uploadedAt).toLocaleDateString()}</p>
+            <p className="text-xs text-gray-500 mt-1">{file.size} • {new Date(file.updatedAt).toLocaleDateString()}</p>
           </div>
           <button className="text-gray-400 hover:text-[#A1D2CE] p-1">
             <MoreVertical size={18} />
@@ -128,7 +128,7 @@ const RecentFiles = ({ file, viewMode = 'grid', showAll = false, isGridItem = fa
         
         <div>
           <p className="font-medium text-gray-800 truncate max-w-[180px]">{file.name}</p>
-          <p className="text-xs text-gray-500">{file.size} • {new Date(file.uploadedAt).toLocaleDateString()}</p>
+          <p className="text-xs text-gray-500">{file.size} • {new Date(file.updatedAt).toLocaleDateString()}</p>
         </div>
       </div>
 

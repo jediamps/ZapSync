@@ -1,74 +1,45 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
-const User = require('./User');
-const { checkForProfanity } = require('../services/contentFilter');
+const mongoose = require('mongoose');
 
-const Folder = sequelize.define('Folder', {
-  id: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-    autoIncrement: true
-  },
+const folderSchema = new mongoose.Schema({
   name: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    validate: {
-      notEmpty: {
-        msg: 'Folder name cannot be empty'
-      },
-      len: {
-        args: [1, 255],
-        msg: 'Folder name must be between 1 and 255 characters'
-      },
-      async isNotProfane(value) {
-        if (await checkForProfanity(value)) {
-          throw new Error('Folder name contains inappropriate language');
-        }
-      }
-    }
+    type: String,
+    required: true,
+    trim: true,
+    minlength: 1,
+    maxlength: 255
   },
   description: {
-    type: DataTypes.TEXT,
-    allowNull: true
+    type: String,
+    trim: true
   },
-  ownerId: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    references: {
-      model: User,
-      key: 'id'
-    }
+  isTrash: {
+    type: Boolean,
+    default: false
   },
-  parentId: {
-    type: DataTypes.INTEGER,
-    allowNull: true,
-    references: {
-      model: Folder,
-      key: 'id'
-    }
+  owner: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
   },
-  createdAt: {
-    type: DataTypes.DATE,
-    allowNull: false,
-    defaultValue: DataTypes.NOW
+  parent: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Folder'
   },
-  updatedAt: {
-    type: DataTypes.DATE,
-    allowNull: false,
-    defaultValue: DataTypes.NOW
-  }
+  files: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'File'
+  }],
+  sharedWith: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }]
 }, {
-  indexes: [
-    {
-      unique: true,
-      fields: ['name', 'parentId', 'ownerId']
-    }
-  ]
+  timestamps: true
 });
 
-// Relationships
-Folder.belongsTo(User, { foreignKey: 'ownerId', as: 'owner' });
-Folder.belongsTo(Folder, { foreignKey: 'parentId', as: 'parent' });
-Folder.hasMany(Folder, { foreignKey: 'parentId', as: 'children' });
+// Index for unique folder names per parent per owner
+folderSchema.index({ name: 1, parent: 1, owner: 1 }, { unique: true });
+
+const Folder = mongoose.model('Folder', folderSchema);
 
 module.exports = Folder;

@@ -5,6 +5,12 @@ const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const groupRoutes = require('./routes/groupRoutes');
 const fileRoutes = require('./routes/fileRoutes'); 
+const folderRoutes = require('./routes/folderRoutes');
+const trashRoutes = require('./routes/trashRoutes');
+const searchRoutes = require('./routes/searchRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
+const analyticsRoutes = require('./routes/analyticsRoutes');
+const starredRoutes = require('./routes/starredRoutes');
 const path = require('path');
 
 dotenv.config();
@@ -35,6 +41,12 @@ app.use('/public', express.static(path.join(__dirname, 'public')));
 app.use('/api/auth', authRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/files', fileRoutes);
+app.use('/api/folders', folderRoutes);
+// app.use('/api/trash', trashRoutes);
+// app.use('/api/search', searchRoutes);
+// app.use('/api/notifications', notificationRoutes);
+app.use('/api/analytics', analyticsRoutes);
+// app.use('/api/starred', starredRoutes);
 
 const PORT = process.env.PORT;
 

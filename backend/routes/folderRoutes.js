@@ -1,28 +1,21 @@
 const express = require('express');
 const router = express.Router();
 const folderController = require('../controllers/folderController');
-const { upload } = require('../middleware/uploadMiddleware');
+const { folderUpload, analyzeFileContent } = require('../middleware/uploadMiddleware');
 const { protect } = require('../middleware/authMiddleware');
 
 // Apply auth middleware to all routes
 router.use(protect);
 
 // Create a new folder
-router.post('/', folderController.createFolder);
+router.post('/create', folderController.createFolder);
 
 // Upload files to a folder
-router.post('/:folderId/upload', upload.array('files[]'), folderController.uploadFilesToFolder);
+router.post('/:folderId/upload', folderUpload.array('files[]'), analyzeFileContent, folderController.uploadFilesToFolder);
 
 // Get all folders (tree structure)
-router.get('/', folderController.getAllFolders);
+router.get('/all', folderController.getAllFolders);
 
-// Get folder details with contents
-router.get('/:folderId', folderController.getFolderDetails);
 
-// Update folder
-router.put('/:folderId', folderController.updateFolder);
-
-// Delete folder
-router.delete('/:folderId', folderController.deleteFolder);
 
 module.exports = router;

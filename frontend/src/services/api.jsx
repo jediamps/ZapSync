@@ -179,7 +179,7 @@ export const uploadFilesToFolder = async (folderId, files) => {
 export const getFolders = async () => {
   try {
     const response = await api.get("/folders/all");
-    return response.data;
+    return response.data.data;
   } catch (error) {
     throw error;
   }
@@ -212,3 +212,51 @@ export const joinGroup = async (groupId) => {
     throw error.response?.data?.error || error.message;
   }
 };
+
+// Add to your existing api.js
+export const getAnalytics = async () => {
+  try {
+    const response = await api.get('/');
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+
+/**
+ * Perform smart search using natural language processing
+ * @param {string} query - The natural language search query (e.g., "Dr. Amoako lecture notes Week 3")
+ * @returns {Promise} - Resolves with search results
+ */
+export const smartSearch = async (query) => {
+  try {
+    const response = await api.post('/search/smart', {
+      query: query
+    }, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Smart Search Error:", error);
+    throw error;
+  }
+};
+
+/**
+ * Get search suggestions based on partial input
+ * @param {string} partialQuery - Partial search query
+ * @returns {Promise} - Resolves with suggestions
+ */
+export const getSearchSuggestions = async (partialQuery) => {
+  try {
+    const response = await api.get(`/search/suggestions?q=${encodeURIComponent(partialQuery)}`);
+    return response.data;
+  } catch (error) {
+    console.error("Search Suggestions Error:", error);
+    throw error;
+  }
+};
+

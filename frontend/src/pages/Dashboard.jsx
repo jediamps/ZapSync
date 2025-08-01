@@ -10,7 +10,8 @@ import {
   getStorageUsage,
   createFolder,
   uploadFilesToFolder, 
-  getFolders
+  getFolders,
+  smartSearch
 } from "../services/api";
 import { toast } from "react-toastify";
 import { useOutletContext } from "react-router";
@@ -72,8 +73,8 @@ const Dashboard = () => {
           getFiles()
         ]);
         setFolders(foldersData);
-        setFiles(filesData.files);
-        setFilteredFiles(filesData.files);
+        setFiles(filesData);
+        setFilteredFiles(filesData);
       } catch (error) {
         toast.error("Failed to load data: " + (error.message || "Unknown error"));
       }
@@ -172,7 +173,7 @@ const Dashboard = () => {
 
       // If uploading files, add them to folder
       if (folderModalType === 'upload' && folderFiles.length > 0) {
-        await uploadFilesToFolder(folder.id, folderFiles);
+        await uploadFilesToFolder(folder.data._id, folderFiles);
         toast.success(`Folder created with ${folderFiles.length} files uploaded!`);
       } else {
         toast.success("Folder created successfully!");
@@ -205,9 +206,10 @@ const Dashboard = () => {
     }
   };
 
-  const handleChatSend = () => {
+  const handleChatSend = async () => {
     if (!currentMessage.trim()) return;
     
+    // Add user message to chat
     const userMessage = {
       id: chatMessages.length + 1,
       text: currentMessage,
@@ -217,17 +219,44 @@ const Dashboard = () => {
     setChatMessages([...chatMessages, userMessage]);
     setCurrentMessage('');
     
-    // Simulate API call with loading state
-    setTimeout(() => {
+    try {
+      // Add loading indicator
+      setChatMessages(prev => [...prev, {
+        id: prev.length + 2,
+        text: "Searching...",
+        sender: 'bot',
+        isLoading: true
+      }]);
+      
+      // Call smart search API
+      const results = await smartSearch(currentMessage);
+      
+      // Format results for display
+      const resultsMessage = {
+        id: chatMessages.length + 3,
+        text: results.message || `Found ${results.files.length} matching files:`,
+        sender: 'bot',
+        files: results.files,
+        isSearchResult: true
+      };
+      
+      // Update chat - replace loading message with results
       setChatMessages(prev => [
-        ...prev,
+        ...prev.slice(0, -1), // Remove loading message
+        resultsMessage
+      ]);
+      
+    } catch (error) {
+      // Handle errors
+      setChatMessages(prev => [
+        ...prev.slice(0, -1), // Remove loading message
         {
-          id: prev.length + 2,
-          text: `I found these files:\n- Week3_notes_final.docx\n- CS101_Lecture3.pdf\n- Dr_Amoako_Week3_Summary.docx\n\nTry asking "Show me PDFs only" to filter further!`,
+          id: prev.length + 3,
+          text: "Sorry, I couldn't complete your search. Please try again.",
           sender: 'bot'
         }
       ]);
-    }, 1000);
+    }
   };
 
   return (
@@ -441,10 +470,10 @@ const Dashboard = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {folders.slice(0, 3).map(folder => (
                     <FolderCard 
-                      key={folder.id}
+                      key={folder._id}
                       title={folder.name}
-                      filesCount={folder.file_count || 0}
-                      createdDate={new Date(folder.created_at).toLocaleDateString('en-US', {
+                      filesCount={folder.fileCount || 0}
+                      createdDate={new Date(folder.createdAt).toLocaleDateString('en-US', {
                         day: 'numeric',
                         month: 'short',
                         year: 'numeric'
@@ -460,10 +489,10 @@ const Dashboard = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {folders.slice(3, 6).map(folder => (
                       <FolderCard 
-                        key={folder.id}
+                        key={folder._id}
                         title={folder.name}
-                        filesCount={folder.file_count || 0}
-                        createdDate={new Date(folder.created_at).toLocaleDateString('en-US', {
+                        filesCount={folder.fileCount || 0}
+                        createdDate={new Date(folder.createdAt).toLocaleDateString('en-US', {
                           day: 'numeric',
                           month: 'short',
                           year: 'numeric'

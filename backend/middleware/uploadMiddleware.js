@@ -7,7 +7,7 @@ const mammoth = require('mammoth'); // npm install pdf-parse mammoth
 const storage = multer.memoryStorage();
 
 // File type whitelist
-const allowedExtensions = ['.txt', '.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png', '.gif'];
+const allowedExtensions = ['.txt', '.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png', '.gif', '.py', '.js', '.html', '.css', '.json', '.cpp', '.c', '.java', '.md', '.zip', '.ppt', '.pptx', '.xls', '.xlsx', '.csv', '.xml', '.yaml', '.yml', '.mp4', '.avi', '.mov', '.mkv', '.mp3', '.wav', '.ogg'];
 const dangerousExtensions = ['.exe', '.bat', '.sh', '.jar', '.dll'];
 
 // Pre-file filter
@@ -43,12 +43,23 @@ const preFileFilter = (req, file, cb) => {
   }
 };
 
-const upload = multer({
+// For single file uploads (normal file upload)
+const singleUpload = multer({
   storage: storage,
   fileFilter: preFileFilter,
   limits: {
     fileSize: 1024 * 1024 * 100, // 100MB
-    files: 1
+    files: 1 // Only 1 file allowed
+  }
+});
+
+// For folder uploads (multiple files)
+const folderUpload = multer({
+  storage: storage,
+  fileFilter: preFileFilter,
+  limits: {
+    fileSize: 1024 * 1024 * 100, // 100MB per file
+    files: 50 // Allow up to 50 files
   }
 });
 
@@ -112,6 +123,7 @@ async function checkTextContent(content) {
 }
 
 module.exports = {
-  upload,
+  singleUpload,
+  folderUpload,
   analyzeFileContent
 };

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router";
-import { Trash2, ArrowLeft, Check, X, AlertTriangle } from 'lucide-react';
+import { Trash2, ArrowLeft, Check, X, AlertTriangle, Menu } from 'lucide-react';
 import { toast } from "react-toastify";
 
 const Trash = () => {
@@ -127,7 +127,7 @@ const Trash = () => {
   };
 
   return (
-    <div className="bg-[var(--color-bg)] min-h-screen">
+    <div className="min-h-screen">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-6 md:mb-8 flex items-center justify-between gap-4">
@@ -136,7 +136,7 @@ const Trash = () => {
               onClick={toggleSidebar}
               className="text-gray-600 hover:text-[var(--color-primary)] transition-colors"
             >
-              <ArrowLeft size={24} />
+              <Menu size={24} />
             </button>
             <h1 className="text-xl md:text-2xl font-semibold text-[var(--color-text)]">Trash</h1>
           </div>
