@@ -150,9 +150,24 @@
     color: #FFD700;
   }
   
-  .starButton.starred {
-    color: #FFD700;
-  }
+ 
+.starButton.starred {
+  color: #f59e0b;
+}
+
+.starButton.loading {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.disabledItem {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.disabledItem:hover {
+  background-color: transparent !important;
+}
   
   /* Dropdown Menu Styles */
   .dropdownMenu {

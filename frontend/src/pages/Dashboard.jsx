@@ -198,6 +198,21 @@ const Dashboard = () => {
     }
   };
 
+  const handleFolderStarChange = (folderId, newStarredState) => {
+    setFolders(folders.map(folder => 
+      folder._id === folderId ? { ...folder, is_starred: newStarredState } : folder
+    ));
+  };
+
+  const handleFileStarChange = (fileId, newStarredState) => {
+    setFiles(files.map(file => 
+      file._id === fileId ? { ...file, is_starred: newStarredState } : file
+    ));
+    setFilteredFiles(filteredFiles.map(file => 
+      file._id === fileId ? { ...file, is_starred: newStarredState } : file
+    ));
+  };
+
   // Add user to folder sharing
   const addUser = () => {
     if (userInput.trim() && !folderUsers.includes(userInput.trim())) {
@@ -471,6 +486,7 @@ const Dashboard = () => {
                   {folders.slice(0, 3).map(folder => (
                     <FolderCard 
                       key={folder._id}
+                      id={folder._id}
                       title={folder.name}
                       filesCount={folder.fileCount || 0}
                       createdDate={new Date(folder.createdAt).toLocaleDateString('en-US', {
@@ -480,6 +496,7 @@ const Dashboard = () => {
                       })}
                       users={folder.shared_with?.map(user => user.avatar) || []}
                       isStarred={folder.is_starred}
+                      onStarChange={handleFolderStarChange}
                     />
                   ))}
                 </div>
@@ -490,6 +507,7 @@ const Dashboard = () => {
                     {folders.slice(3, 6).map(folder => (
                       <FolderCard 
                         key={folder._id}
+                        id={folder._id}
                         title={folder.name}
                         filesCount={folder.fileCount || 0}
                         createdDate={new Date(folder.createdAt).toLocaleDateString('en-US', {
@@ -499,6 +517,7 @@ const Dashboard = () => {
                         })}
                         users={folder.shared_with?.map(user => user.avatar) || []}
                         isStarred={folder.is_starred}
+                        onStarChange={handleFolderStarChange}
                       />
                     ))}
                   </div>
@@ -536,6 +555,7 @@ const Dashboard = () => {
                     {folders.slice(6).map(folder => (
                       <FolderCard 
                         key={folder.id}
+                        id={folder._id}
                         title={folder.name}
                         filesCount={folder.file_count || 0}
                         createdDate={new Date(folder.created_at).toLocaleDateString('en-US', {
@@ -545,6 +565,7 @@ const Dashboard = () => {
                         })}
                         users={folder.shared_with?.map(user => user.avatar) || []}
                         isStarred={folder.is_starred}
+                        onStarChange={handleFolderStarChange}
                       />
                     ))}
                   </div>
@@ -556,6 +577,7 @@ const Dashboard = () => {
               {folders.slice(0, showAllFolders ? folders.length : 6).map(folder => (
                 <FolderListCard 
                   key={folder.id}
+                  id={folder._id}
                   title={folder.name}
                   filesCount={folder.file_count || 0}
                   createdDate={new Date(folder.created_at).toLocaleDateString('en-US', {
@@ -565,6 +587,7 @@ const Dashboard = () => {
                   })}
                   users={folder.shared_with?.map(user => user.avatar) || []}
                   isStarred={folder.is_starred}
+                  onStarChange={handleFolderStarChange}
                 />
               ))}
               
@@ -623,7 +646,7 @@ const Dashboard = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {(showAllRecentFiles ? files : files.slice(0, 3)).map((file, index) => (
                       <RecentFiles 
-                        key={file.id || index} 
+                        key={file._id || index} 
                         file={file} 
                         viewMode={viewMode}
                         isGridItem={true}

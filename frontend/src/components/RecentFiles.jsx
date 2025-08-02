@@ -1,153 +1,307 @@
-import { Share2, MoreVertical } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { 
+  MoreVertical, Download, Edit2, Share2, Star as StarIcon, Trash2, Info,
+  Copy, UserPlus, Link2, File, Image, Video, FileText
+} from 'lucide-react';
+import styles from '../styles/FileCard.module.css'; // You'll need to create this CSS module
+import useStar from '../hooks/useStar';
 
-const RecentFiles = ({ file, viewMode = 'grid', showAll = false, isGridItem = false }) => {
+const FileCard = ({ 
+  file,
+  viewMode = 'grid', // 'grid' or 'list'
+  onStarClick,
+  onShareClick,
+  onDeleteClick,
+  onRenameClick
+}) => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isShareSubmenuOpen, setIsShareSubmenuOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [isStarred, setIsStarred] = useState(file.isStarred);
+  const { toggleStar, checkStarred, isLoading } = useStar();
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsMenuOpen(false);
+        setIsShareSubmenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    const fetchStarStatus = async () => {
+      const starred = await checkStarred(file._id, 'file');
+      setIsStarred(starred);
+    };
+    fetchStarStatus();
+  }, [file]);
+
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(`https://example.com/file/${encodeURIComponent(file.name)}`);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  
+  useEffect(() => {
+    setIsStarred(file.isStarred);
+  }, [file.isStarred]);
+
+  const handleStarClick = async () => {
+    try {
+      const newStarredState = !isStarred;
+      setIsStarred(newStarredState);
+      
+      const result = await toggleStar(file._id, 'file', !isStarred);
+      setIsStarred(result);
+      
+      if (onStarChange) {
+        onStarChange(file._id, result);
+      }
+    } catch (error) {
+      setIsStarred(isStarred);
+    }
+  };
+
+  const getFileIcon = () => {
+    if (file.type?.includes('image')) {
+      return <Image size={20} className={styles.fileIcon} />;
+    } else if (file.type?.includes('pdf')) {
+      return <FileText size={20} className={styles.fileIcon} color="#ef4444" />;
+    } else if (file.type?.includes('video')) {
+      return <Video size={20} className={styles.fileIcon} color="#3b82f6" />;
+    }
+    return <File size={20} className={styles.fileIcon} />;
+  };
+
   if (viewMode === 'list') {
     return (
-      <div className="flex items-center justify-between p-4 bg-white border-b border-gray-100 hover:bg-gray-50 transition-colors">
-        <div className="flex items-center gap-4 min-w-0">
-          {/* File icon based on type */}
-          {file.type?.includes('image') && (
-            <img 
-              src={file.previewUrl} 
-              alt="Preview" 
-              className="w-10 h-10 rounded object-cover"
-            />
-          )}
-          {!file.type?.includes('image') && (
-            <div className="bg-gray-100 p-2 rounded-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
-                <polyline points="13 2 13 9 20 9"></polyline>
-              </svg>
-            </div>
-          )}
+      <div className={styles.fileListCard}>
+        <div className={styles.fileInfoContainer}>
+          <div className={styles.fileIconContainer}>
+            {file.type?.includes('image') ? (
+              <img 
+                src={file.previewUrl} 
+                alt="Preview" 
+                className={styles.filePreview}
+              />
+            ) : (
+              <div className={styles.fileIconWrapper}>
+                {getFileIcon()}
+              </div>
+            )}
+          </div>
           
-          <div className="min-w-0">
-            <h3 className="font-medium text-gray-800 truncate">{file.name}</h3>
-            <p className="text-sm text-gray-500">
+          <div className={styles.fileDetails}>
+            <h3 className={styles.fileName}>{file.name}</h3>
+            <p className={styles.fileMeta}>
               {file.size} • {new Date(file.updatedAt).toLocaleDateString()}
             </p>
           </div>
         </div>
         
-        <button className="text-gray-400 hover:text-[#A1D2CE] p-1.5 rounded-full">
-          <Share2 size={18} />
+        <div className={styles.fileActions}>
+        <button 
+          onClick={handleStarClick}
+          disabled={isLoading}
+          className={`p-1.5 rounded-full ${isStarred ? 'text-yellow-400' : 'text-gray-400 hover:text-gray-600'} ${isLoading ? 'opacity-50' : ''}`}
+        >
+          <StarIcon size={18} fill={isStarred ? 'currentColor' : 'none'} />
         </button>
-      </div>
-    );
-  }
-
-  // Grid view item (compact version for grid layout)
-  if (isGridItem) {
-    return (
-      <div className="bg-white rounded-lg border border-gray-200 p-3 hover:shadow-md transition-all">
-        <div className="mb-3">
-          {/* File icon based on type */}
-          {file.type?.includes('image') ? (
-            <img 
-              src={file.previewUrl || URL.createObjectURL(file)} 
-              alt="Preview" 
-              className="w-full h-32 rounded-lg object-cover"
-            />
-          ) : file.type?.includes('pdf') ? (
-            <div className="bg-red-50 h-32 rounded-lg flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-              </svg>
-            </div>
-          ) : file.type?.includes('video') ? (
-            <div className="bg-blue-50 h-32 rounded-lg flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polygon points="23 7 16 12 23 17 23 7"></polygon>
-                <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
-              </svg>
-            </div>
-          ) : (
-            <div className="bg-gray-50 h-32 rounded-lg flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
-                <polyline points="13 2 13 9 20 9"></polyline>
-              </svg>
+          
+          <button 
+            className={styles.actionButton}
+            onClick={onShareClick}
+          >
+            <Share2 size={18} />
+          </button>
+          
+          <button 
+            className={styles.menuButton}
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          >
+            <MoreVertical size={18} />
+          </button>
+          
+          {isMenuOpen && (
+            <div ref={menuRef} className={styles.dropdownMenu}>
+              <div className={styles.menuItems}>
+                <MenuItem icon={<Download size={16} />} label="Download" />
+                <MenuItem 
+                  icon={<Edit2 size={16} />} 
+                  label="Rename" 
+                  onClick={onRenameClick}
+                />
+                
+                <div className={styles.submenuContainer}>
+                  <MenuItem 
+                    icon={<Share2 size={16} />} 
+                    label="Share" 
+                    hasArrow 
+                    onMouseEnter={() => setIsShareSubmenuOpen(true)}
+                  />
+                  
+                  {isShareSubmenuOpen && (
+                    <div 
+                      className={styles.submenu}
+                      onMouseLeave={() => setIsShareSubmenuOpen(false)}
+                    >
+                      <MenuItem 
+                        icon={<Copy size={16} />} 
+                        label={copied ? 'Copied!' : 'Copy link'} 
+                        onClick={handleCopyLink}
+                      />
+                      <MenuItem 
+                        icon={<Link2 size={16} />} 
+                        label="Share with..." 
+                      />
+                    </div>
+                  )}
+                </div>
+                
+                <MenuItem 
+                  icon={<StarIcon size={16} />} 
+                  label={isStarred ? 'Unstar' : 'Star'} 
+                  onClick={onStarClick}
+                />
+                
+                <div className={styles.menuDivider}></div>
+                
+                <MenuItem 
+                  icon={<Trash2 size={16} />} 
+                  label="Move to trash" 
+                  danger
+                  onClick={onDeleteClick}
+                />
+                
+                <MenuItem 
+                  icon={<Info size={16} />} 
+                  label="File info" 
+                />
+              </div>
             </div>
           )}
         </div>
-        
-        <div className="flex justify-between items-start">
-          <div className="flex-1 min-w-0">
-            <p className="font-medium text-gray-800 truncate">{file.name}</p>
-            <p className="text-xs text-gray-500 mt-1">{file.size} • {new Date(file.updatedAt).toLocaleDateString()}</p>
-          </div>
-          <button className="text-gray-400 hover:text-[#A1D2CE] p-1">
-            <MoreVertical size={18} />
-          </button>
-        </div>
       </div>
     );
   }
 
-  // Default grid view (list-like but in grid mode)
+  // Grid view
   return (
-    <div className="flex justify-between items-center bg-white hover:bg-gray-50 p-3 rounded-lg border border-gray-100 my-2 transition-colors">
-      <div className="flex items-center gap-3">
-        {/* File icon based on type */}
-        {file.type?.includes('image') && (
+    <div className={styles.fileGridCard}>
+      <div className={styles.filePreviewContainer}>
+        {file.type?.includes('image') ? (
           <img 
-            src={file.previewUrl || URL.createObjectURL(file)} 
+            src={file.previewUrl} 
             alt="Preview" 
-            className="w-8 h-8 rounded object-cover"
+            className={styles.gridPreview}
           />
-        )}
-        {file.type?.includes('pdf') && (
-          <div className="bg-red-100 p-1.5 rounded">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-              <polyline points="14 2 14 8 20 8"></polyline>
-              <path d="M10 11H8v2h2v-2z"></path>
-              <path d="M16 11h-2v2h2v-2z"></path>
-              <path d="M12 11h-2v2h2v-2z"></path>
-            </svg>
+        ) : (
+          <div className={styles.gridIconContainer}>
+            {getFileIcon()}
           </div>
         )}
-        {file.type?.includes('video') && (
-          <div className="bg-blue-100 p-1.5 rounded">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polygon points="23 7 16 12 23 17 23 7"></polygon>
-              <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
-            </svg>
-          </div>
-        )}
-        {!file.type?.includes('image') && !file.type?.includes('pdf') && !file.type?.includes('video') && (
-          <div className="bg-gray-100 p-1.5 rounded">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
-              <polyline points="13 2 13 9 20 9"></polyline>
-            </svg>
-          </div>
-        )}
-        
-        <div>
-          <p className="font-medium text-gray-800 truncate max-w-[180px]">{file.name}</p>
-          <p className="text-xs text-gray-500">{file.size} • {new Date(file.updatedAt).toLocaleDateString()}</p>
-        </div>
       </div>
-
-      <div className="flex items-center gap-2">
+      
+      <div className={styles.gridFooter}>
+        <div className={styles.gridFileInfo}>
+          <h3 className={styles.gridFileName}>{file.name}</h3>
+          <p className={styles.gridFileMeta}>
+            {file.size} • {new Date(file.updatedAt).toLocaleDateString()}
+          </p>
+        </div>
+        
+        <div className={styles.gridActions}>
         <button 
-          className="p-1.5 rounded-full hover:bg-gray-100 text-gray-500 hover:text-[#A1D2CE] transition-colors"
-          aria-label="Share file"
+          onClick={handleStarClick}
+          disabled={isLoading}
+          className={`p-1.5 rounded-full ${isStarred ? 'text-yellow-400' : 'text-gray-400 hover:text-gray-600'} ${isLoading ? 'opacity-50' : ''}`}
         >
-          <Share2 size={18} />
+          <StarIcon size={18} fill={isStarred ? 'currentColor' : 'none'} />
         </button>
-        <button 
-          className="p-1.5 rounded-full hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors"
-          aria-label="More options"
-        >
-          <MoreVertical size={18} />
-        </button>
+          
+          <button 
+            className={styles.gridMenuButton}
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          >
+            <MoreVertical size={16} />
+          </button>
+          
+          {isMenuOpen && (
+            <div ref={menuRef} className={styles.gridDropdownMenu}>
+              <div className={styles.menuItems}>
+                <MenuItem icon={<Download size={16} />} label="Download" />
+                <MenuItem 
+                  icon={<Edit2 size={16} />} 
+                  label="Rename" 
+                  onClick={onRenameClick}
+                />
+                
+                <div className={styles.submenuContainer}>
+                  <MenuItem 
+                    icon={<Share2 size={16} />} 
+                    label="Share" 
+                    hasArrow 
+                    onMouseEnter={() => setIsShareSubmenuOpen(true)}
+                  />
+                  
+                  {isShareSubmenuOpen && (
+                    <div 
+                      className={styles.submenu}
+                      onMouseLeave={() => setIsShareSubmenuOpen(false)}
+                    >
+                      <MenuItem 
+                        icon={<Copy size={16} />} 
+                        label={copied ? 'Copied!' : 'Copy link'} 
+                        onClick={handleCopyLink}
+                      />
+                      <MenuItem 
+                        icon={<Link2 size={16} />} 
+                        label="Share with..." 
+                      />
+                    </div>
+                  )}
+                </div>
+                
+                <MenuItem 
+                  icon={<StarIcon size={16} />} 
+                  label={isStarred ? 'Unstar' : 'Star'} 
+                  onClick={onStarClick}
+                />
+                
+                <div className={styles.menuDivider}></div>
+                
+                <MenuItem 
+                  icon={<Trash2 size={16} />} 
+                  label="Move to trash" 
+                  danger
+                  onClick={onDeleteClick}
+                />
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
 };
 
-export default RecentFiles;
+const MenuItem = ({ icon, label, hasArrow = false, danger = false, onClick }) => {
+  return (
+    <button
+      onClick={onClick}
+      className={`${styles.menuItem} ${danger ? styles.dangerItem : ''}`}
+    >
+      <span className={styles.menuIcon}>{icon}</span>
+      <span className={styles.menuLabel}>{label}</span>
+      {hasArrow && <span className={styles.menuArrow}>→</span>}
+    </button>
+  );
+};
+
+export default FileCard;

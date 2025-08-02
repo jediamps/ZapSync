@@ -1,0 +1,298 @@
+/* List View Styles */
+.fileListCard {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    background-color: white;
+    border-bottom: 1px solid #f3f4f6;
+    transition: background-color 0.2s;
+  }
+  
+  .fileListCard:hover {
+    background-color: #f9fafb;
+  }
+  
+  .fileInfoContainer {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    min-width: 0;
+    flex: 1;
+  }
+  
+  .fileIconContainer {
+    flex-shrink: 0;
+  }
+  
+  .filePreview {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.5rem;
+    object-fit: cover;
+  }
+  
+  .fileIconWrapper {
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    background-color: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .fileDetails {
+    min-width: 0;
+  }
+  
+  .fileName {
+    font-weight: 500;
+    color: #1f2937;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .fileMeta {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin: 0.25rem 0 0;
+  }
+  
+  .fileActions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .starButton {
+    color: #9ca3af;
+    padding: 0.375rem;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+  }
+  
+  .starButton:hover {
+    color: #f59e0b;
+  }
+  
+  .starButton.starred {
+    color: #f59e0b;
+  }
+  
+  .actionButton {
+    color: #9ca3af;
+    padding: 0.375rem;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+  }
+  
+  .actionButton:hover {
+    color: var(--color-primary);
+  }
+  
+  .menuButton {
+    color: #9ca3af;
+    padding: 0.375rem;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+  }
+  
+  .menuButton:hover {
+    color: #6b7280;
+  }
+  
+  /* Grid View Styles */
+  .fileGridCard {
+    background-color: white;
+    border-radius: 0.5rem;
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+  }
+  
+  .fileGridCard:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  
+  .filePreviewContainer {
+    position: relative;
+    padding-top: 100%; /* Square aspect ratio */
+    overflow: hidden;
+  }
+  
+  .gridPreview {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .gridIconContainer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f3f4f6;
+  }
+  
+  .gridFooter {
+    padding: 0.75rem;
+  }
+  
+  .gridFileInfo {
+    margin-bottom: 0.5rem;
+  }
+  
+  .gridFileName {
+    font-weight: 500;
+    color: #1f2937;
+    margin: 0 0 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .gridFileMeta {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin: 0;
+  }
+  
+  .gridActions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.25rem;
+  }
+  
+  .gridStarButton {
+    color: #9ca3af;
+    padding: 0.25rem;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+  }
+  
+  .gridStarButton:hover {
+    color: #f59e0b;
+  }
+  
+  .gridStarButton.starred {
+    color: #f59e0b;
+  }
+  
+  .gridMenuButton {
+    color: #9ca3af;
+    padding: 0.25rem;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+  }
+  
+  .gridMenuButton:hover {
+    color: #6b7280;
+  }
+  
+  /* Shared Dropdown Menu Styles */
+  .dropdownMenu, .gridDropdownMenu {
+    position: absolute;
+    right: 0;
+    margin-top: 0.5rem;
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    z-index: 10;
+    min-width: 200px;
+  }
+  
+  .gridDropdownMenu {
+    margin-top: 0;
+    margin-right: 0.5rem;
+  }
+  
+  .menuItems {
+    padding: 0.5rem;
+  }
+  
+  .menuItem {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    color: #4b5563;
+    transition: background-color 0.2s;
+  }
+  
+  .menuItem:hover {
+    background-color: #f3f4f6;
+    color: #111827;
+  }
+  
+  .menuIcon {
+    margin-right: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .menuLabel {
+    flex: 1;
+    text-align: left;
+  }
+  
+  .menuArrow {
+    margin-left: 0.5rem;
+    color: #9ca3af;
+  }
+  
+  .submenuContainer {
+    position: relative;
+  }
+  
+  .submenu {
+    position: absolute;
+    left: 100%;
+    top: 0;
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    min-width: 180px;
+  }
+  
+  .menuDivider {
+    height: 1px;
+    background-color: #e5e7eb;
+    margin: 0.5rem 0;
+  }
+  
+  .dangerItem {
+    color: #ef4444;
+  }
+  
+  .dangerItem:hover {
+    color: #dc2626;
+    background-color: #fee2e2;
+  }

@@ -1,21 +1,38 @@
 import { useState, useRef, useEffect } from 'react';
 import { 
-  MoreVertical, Download, Edit2, Share2, Star, Trash2, Info,
+  MoreVertical, Download, Edit2, Share2, Star as StarIcon, Trash2, Info,
   Copy, UserPlus, Link2, Folder as FolderIcon
 } from 'lucide-react';
-import styles from '../styles/FolderCard.module.css'; // We'll create this CSS module
+import styles from '../styles/FolderCard.module.css';
+import useStar from '../hooks/useStar'; // Import the useStar hook
 
 const FolderCard = ({ 
+  id,
   title = 'Untitled Folder', 
   filesCount = 0, 
   createdDate = 'Unknown date', 
   users = [],
-  isStarred = false
+  isStarred: initialIsStarred = false,
+  onStarChange // Add this prop to notify parent of changes
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isShareSubmenuOpen, setIsShareSubmenuOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isStarred, setIsStarred] = useState(initialIsStarred);
+  const { toggleStar, checkStarred, isLoading } = useStar(); // Initialize the star hook
   const menuRef = useRef(null);
+
+  useEffect(() => {
+    setIsStarred(initialIsStarred);
+  }, [initialIsStarred]);
+
+  useEffect(() => {
+    const fetchStarStatus = async () => {
+      const starred = await checkStarred(id, 'folder');
+      setIsStarred(starred);
+    };
+    fetchStarStatus();
+  }, [id]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -32,6 +49,28 @@ const FolderCard = ({
     navigator.clipboard.writeText(`https://example.com/folder/${encodeURIComponent(title)}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleStarClick = async () => {
+    try {
+      // Optimistic update
+      const newStarredState = !isStarred;
+      setIsStarred(newStarredState);
+      
+      // Call API
+      const result = await toggleStar(id, 'folder', !isStarred);
+      
+      // Sync with actual result (in case of error)
+      setIsStarred(result);
+      
+      // Notify parent if needed
+      if (onStarChange) {
+        onStarChange(id, result);
+      }
+    } catch (error) {
+      // Error is already handled by the hook
+      setIsStarred(!isStarred); // Revert if error
+    }
   };
 
   return (
@@ -79,8 +118,14 @@ const FolderCard = ({
             </button>
           </div>
           
-          <button className={`${styles.starButton} ${isStarred ? styles.starred : ''}`}>
-            <Star size={18} fill={isStarred ? 'currentColor' : 'none'} />
+          {/* Updated Star Button */}
+          <button 
+            onClick={handleStarClick}
+            disabled={isLoading}
+            className={`${styles.starButton} ${isStarred ? styles.starred : ''} ${isLoading ? styles.loading : ''}`}
+            aria-label={isStarred ? 'Unstar folder' : 'Star folder'}
+          >
+            <StarIcon size={18} fill={isStarred ? 'currentColor' : 'none'} />
           </button>
         </div>
       </div>
@@ -119,9 +164,12 @@ const FolderCard = ({
               )}
             </div>
             
+            {/* Updated Star Menu Item */}
             <MenuItem 
-              icon={<Star size={16} />} 
+              icon={<StarIcon size={16} />} 
               label={isStarred ? 'Unstar' : 'Star'} 
+              onClick={handleStarClick}
+              disabled={isLoading}
             />
             
             <div className={styles.menuDivider}></div>
@@ -143,11 +191,13 @@ const FolderCard = ({
   );
 };
 
-const MenuItem = ({ icon, label, hasArrow = false, danger = false, onClick }) => {
+// Updated MenuItem to support disabled state
+const MenuItem = ({ icon, label, hasArrow = false, danger = false, onClick, disabled = false }) => {
   return (
     <button
       onClick={onClick}
-      className={`${styles.menuItem} ${danger ? styles.dangerItem : ''}`}
+      disabled={disabled}
+      className={`${styles.menuItem} ${danger ? styles.dangerItem : ''} ${disabled ? styles.disabledItem : ''}`}
     >
       <span className={styles.menuIcon}>{icon}</span>
       <span className={styles.menuLabel}>{label}</span>

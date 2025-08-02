@@ -1,7 +1,7 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:5000/api"; 
-// const BASE_URL = "https://zapsync.onrender.com/api";
+// const BASE_URL = "http://localhost:5000/api"; 
+const BASE_URL = "https://zapsync.onrender.com/api";
 
 // Create axios instance
 const api = axios.create({
@@ -257,6 +257,31 @@ export const getSearchSuggestions = async (partialQuery) => {
   } catch (error) {
     console.error("Search Suggestions Error:", error);
     throw error;
+  }
+};
+
+export const activateStar = async (id, type, isStarred) => {
+  try {
+    const response = await api.patch('/starred/', {
+      id,
+      type,
+      isStarred
+    });
+    return response.data;
+  } catch (error) {
+    console.error("failed to toggle star:", error);
+  }
+};
+
+export const checkForStarred = async (id, type) => {
+  try {
+    const response = await api.get(`/starred/${id}/${type}`, {
+      id,
+      type,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("failed to toggle star:", error);
   }
 };
 

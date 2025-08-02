@@ -46,7 +46,7 @@ app.use('/api/folders', folderRoutes);
 // app.use('/api/search', searchRoutes);
 // app.use('/api/notifications', notificationRoutes);
 app.use('/api/analytics', analyticsRoutes);
-// app.use('/api/starred', starredRoutes);
+app.use('/api/starred', starredRoutes);
 
 const PORT = process.env.PORT;
 
