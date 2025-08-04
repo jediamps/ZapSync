@@ -1,7 +1,7 @@
 import axios from "axios";
 
-// const BASE_URL = "http://localhost:5000/api"; 
-const BASE_URL = "https://zapsync.onrender.com/api";
+const BASE_URL = "http://localhost:5000/api"; 
+// const BASE_URL = "https://zapsync.onrender.com/api";
 
 // Create axios instance
 const api = axios.create({
@@ -224,11 +224,7 @@ export const getAnalytics = async () => {
 };
 
 
-/**
- * Perform smart search using natural language processing
- * @param {string} query - The natural language search query (e.g., "Dr. Amoako lecture notes Week 3")
- * @returns {Promise} - Resolves with search results
- */
+
 export const smartSearch = async (query) => {
   try {
     const response = await api.post('/search/smart', {
@@ -245,20 +241,7 @@ export const smartSearch = async (query) => {
   }
 };
 
-/**
- * Get search suggestions based on partial input
- * @param {string} partialQuery - Partial search query
- * @returns {Promise} - Resolves with suggestions
- */
-export const getSearchSuggestions = async (partialQuery) => {
-  try {
-    const response = await api.get(`/search/suggestions?q=${encodeURIComponent(partialQuery)}`);
-    return response.data;
-  } catch (error) {
-    console.error("Search Suggestions Error:", error);
-    throw error;
-  }
-};
+
 
 export const activateStar = async (id, type, isStarred) => {
   try {
@@ -285,3 +268,72 @@ export const checkForStarred = async (id, type) => {
   }
 };
 
+export const getStarred = async () => {
+  try {
+    const response = await api.get('/starred/get');
+    return response.data;
+  } catch (error) {
+    console.error("failed to get all starred:", error);
+  }
+};
+
+export const moveToTrash = async (id, type) => {
+  try {
+    const response = await api.put('/trash/move', {
+      id,
+      type
+    });
+    return response.data;
+  } catch (error) {
+    console.error("failed to move to trash:", error);
+  }
+};
+
+export const getTrash = async () => {
+  try {
+    const response = await api.get('/trash/all');
+    return response.data;
+  } catch (error) {
+    console.error("failed to get all trash:", error);
+  }
+};
+
+export const restoreFromTrash = async (id, type) => {
+  try {
+    const response = await api.put(`/${type}s/${id}/restore`);
+    return response.data;
+  } catch (error) {
+    console.error(`Failed to restore ${type}:`, error);
+    throw error;
+  }
+};
+
+export const permanentlyDelete = async (id, type) => {
+  try {
+    const response = await api.delete(`/${type}s/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Failed to permanently delete ${type}:`, error);
+    throw error;
+  }
+};
+
+export const emptyTrash = async () => {
+  try {
+    const response = await api.delete('/trash/empty');
+    return response.data;
+  } catch (error) {
+    console.error("Failed to empty trash:", error);
+    throw error;
+  }
+};
+
+export const getTrashExpiration = async () => {
+  try {
+    const response = await api.get('/trash/expiration');
+    return response.data;
+  } catch (error) {
+    console.error("Failed to get trash expiration:", error);
+    throw error;
+  }
+};

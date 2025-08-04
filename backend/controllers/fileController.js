@@ -61,7 +61,7 @@ exports.uploadFile = async (req, res) => {
 // @access  Private
 exports.getFiles = async (req, res) => {
   try {
-    const files = await File.find({ user: req.user.id })
+    const files = await File.find({ user: req.user.id, isTrash: false  })
       .sort('-createdAt')
       .select('-public_id -__v');
 

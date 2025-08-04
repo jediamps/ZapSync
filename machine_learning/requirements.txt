@@ -7,3 +7,4 @@ joblib
 openpyxl
 django 
 djangorestframework
+sentence-transformers

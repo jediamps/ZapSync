@@ -11,14 +11,15 @@ const FileCard = ({
   viewMode = 'grid', // 'grid' or 'list'
   onStarClick,
   onShareClick,
-  onDeleteClick,
-  onRenameClick
+  onRenameClick,
+  onMoveToTrash
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isShareSubmenuOpen, setIsShareSubmenuOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isStarred, setIsStarred] = useState(file.isStarred);
   const { toggleStar, checkStarred, isLoading } = useStar();
+  const [isMovingToTrash, setIsMovingToTrash] = useState(false);
   const menuRef = useRef(null);
 
   useEffect(() => {
@@ -68,6 +69,17 @@ const FileCard = ({
     }
   };
 
+  const handleMoveToTrash = async () => {
+    setIsMovingToTrash(true);
+    try {
+      await onMoveToTrash(file._id, 'file');
+      setIsMenuOpen(false);
+    } catch (error) {
+      toast.error("Failed to move to trash");
+    } finally {
+      setIsMovingToTrash(false);
+    }
+  };
   const getFileIcon = () => {
     if (file.type?.includes('image')) {
       return <Image size={20} className={styles.fileIcon} />;
@@ -174,9 +186,10 @@ const FileCard = ({
                 
                 <MenuItem 
                   icon={<Trash2 size={16} />} 
-                  label="Move to trash" 
+                  label={isMovingToTrash ? 'Moving...' : 'Move to trash'} 
+                  onClick={handleMoveToTrash}
+                  disabled={isMovingToTrash}
                   danger
-                  onClick={onDeleteClick}
                 />
                 
                 <MenuItem 
@@ -278,9 +291,10 @@ const FileCard = ({
                 
                 <MenuItem 
                   icon={<Trash2 size={16} />} 
-                  label="Move to trash" 
+                  label={isMovingToTrash ? 'Moving...' : 'Move to trash'} 
+                  onClick={handleMoveToTrash}
+                  disabled={isMovingToTrash}
                   danger
-                  onClick={onDeleteClick}
                 />
               </div>
             </div>

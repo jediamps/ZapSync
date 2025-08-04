@@ -4,7 +4,7 @@ import {
   Copy, UserPlus, Link2, Folder as FolderIcon
 } from 'lucide-react';
 import styles from '../styles/FolderCard.module.css';
-import useStar from '../hooks/useStar'; // Import the useStar hook
+import useStar from '../hooks/useStar'; 
 
 const FolderCard = ({ 
   id,
@@ -13,13 +13,15 @@ const FolderCard = ({
   createdDate = 'Unknown date', 
   users = [],
   isStarred: initialIsStarred = false,
-  onStarChange // Add this prop to notify parent of changes
+  onStarChange,
+  onMoveToTrash 
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isShareSubmenuOpen, setIsShareSubmenuOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isStarred, setIsStarred] = useState(initialIsStarred);
-  const { toggleStar, checkStarred, isLoading } = useStar(); // Initialize the star hook
+  const { toggleStar, checkStarred, isLoading } = useStar(); 
+  const [isMovingToTrash, setIsMovingToTrash] = useState(false);
   const menuRef = useRef(null);
 
   useEffect(() => {
@@ -49,6 +51,18 @@ const FolderCard = ({
     navigator.clipboard.writeText(`https://example.com/folder/${encodeURIComponent(title)}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleMoveToTrash = async () => {
+    setIsMovingToTrash(true);
+    try {
+      await onMoveToTrash(id, 'folder');
+      setIsMenuOpen(false);
+    } catch (error) {
+      toast.error("Failed to move to trash");
+    } finally {
+      setIsMovingToTrash(false);
+    }
   };
 
   const handleStarClick = async () => {
@@ -173,10 +187,12 @@ const FolderCard = ({
             />
             
             <div className={styles.menuDivider}></div>
-            
+
             <MenuItem 
               icon={<Trash2 size={16} />} 
-              label="Move to trash" 
+              label={isMovingToTrash ? 'Moving...' : 'Move to trash'} 
+              onClick={handleMoveToTrash}
+              disabled={isMovingToTrash}
               danger
             />
             

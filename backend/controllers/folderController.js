@@ -120,9 +120,10 @@ exports.getAllFolders = async (req, res) => {
           { owner: userId },
           { sharedWith: userId }
         ],
-        parent: parentId
+        parent: parentId,
+        isTrash: false 
       })
-      .select('name description files createdAt updatedAt')
+      .select('name description files isTrash createdAt updatedAt')
       .sort('name');
 
       return Promise.all(folders.map(async folder => {

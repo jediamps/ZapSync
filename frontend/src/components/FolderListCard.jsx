@@ -15,15 +15,16 @@ const FolderListCard = ({
   onStarChange,
   onStarClick,
   onShareClick,
-  onDeleteClick,
   onRenameClick,
-  onDownloadClick
+  onDownloadClick,
+  onMoveToTrash 
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isShareSubmenuOpen, setIsShareSubmenuOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isStarred, setIsStarred] = useState(initialIsStarred);
   const { toggleStar, checkStarred, isLoading } = useStar();
+  const [isMovingToTrash, setIsMovingToTrash] = useState(false);
   const menuRef = useRef(null);
 
   useEffect(() => {
@@ -74,6 +75,18 @@ const FolderListCard = ({
     } catch (error) {
       // Error is already handled by the hook
       setIsStarred(isStarred); // Revert if error
+    }
+  };
+
+  const handleMoveToTrash = async () => {
+    setIsMovingToTrash(true);
+    try {
+      await onMoveToTrash(id, 'folder');
+      setIsMenuOpen(false);
+    } catch (error) {
+      toast.error("Failed to move to trash");
+    } finally {
+      setIsMovingToTrash(false);
     }
   };
 
@@ -194,11 +207,12 @@ const FolderListCard = ({
           <div className="border-t border-gray-200 my-1"></div>
           
           <button
-            onClick={onDeleteClick}
+            onClick={handleMoveToTrash}
+            disabled={isMovingToTrash}
             className="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left"
           >
             <Trash2 size={16} className="mr-3" />
-            Move to trash
+            {isMovingToTrash ? 'Moving...' : 'Move to trash'} 
           </button>
         </div>
       )}

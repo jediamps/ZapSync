@@ -22,5 +22,5 @@ urlpatterns = [
     path('filter/', include('content_filtering.urls')),
     # path('anomaly/', include('anomaly_detection.urls')),
     # path('recommend/', include('recommendation_system.urls')),
-    # path('nlp/', include('nlp.urls')),
+    path('nlp/', include('nlp.urls')),
 ]

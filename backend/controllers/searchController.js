@@ -1,153 +1,148 @@
-const Search = require('../models/Search');
 const File = require('../models/File');
+const Folder = require('../models/Folder');
 
-const searchController = {
-  smartSearch: async (req, res) => {
-    try {
-      const { nlpData } = req;
-      const userId = req.user._id; // Assuming user is authenticated
+const smartSearch = async (req, res) => {
+  try {
+    const { nlpData, user } = req;
+    const { entities, intent, processedQuery } = nlpData;
+    // console.log(req)
 
-      // Build search query
-      const searchQuery = buildSearchQuery(nlpData);
-      
-      // Execute search
-      const results = await File.find(searchQuery)
-        .sort({ relevanceScore: -1 })
-        .limit(50);
+    // Prepare search conditions based on entities
+    const searchConditions = {
+      $and: [
+        { isTrash: false },
+        { $or: [] }
+      ]
+    };
 
-      // Save search history
-      const searchRecord = new Search({
-        query: nlpData.originalQuery,
-        processedQuery: nlpData.processedQuery,
-        userId,
-        resultsCount: results.length,
-        entities: nlpData.entities,
-        intent: nlpData.intent,
-        confidence: nlpData.confidence
-      });
-      await searchRecord.save();
+    // Add user restriction (only search user's files)
+    searchConditions.$and.push({
+      $or: [
+        { user: user._id },
+        { 'sharedWith': user._id }
+      ]
+    });
 
-      res.json({
-        success: true,
-        message: `Found ${results.length} matching files`,
-        files: formatFileResults(results),
-        suggestions: generateSuggestions(results),
-        searchId: searchRecord._id // For tracking
-      });
-
-    } catch (error) {
-      console.error('Search Error:', error);
-      res.status(500).json({ 
-        success: false, 
-        error: 'Search failed' 
+    // Build search terms from entities
+    const searchTerms = [];
+    
+    // Add courses to search terms
+    if (entities.courses.length > 0) {
+      searchConditions.$and.push({
+        $or: entities.courses.map(course => ({
+          $or: [
+            { name: new RegExp(course, 'i') },
+            { description: new RegExp(course, 'i') },
+            { tags: { $in: [new RegExp(course, 'i')] } }
+          ]
+        }))
       });
     }
-  },
 
-  getSuggestions: async (req, res) => {
-    try {
-      const { q } = req.query;
-      const userId = req.user._id;
-      
-      if (!q || q.length < 2) {
-        return res.json({ success: true, suggestions: [] });
+    // Add lecturers to search terms
+    if (entities.lecturers.length > 0) {
+      searchConditions.$and.push({
+        $or: entities.lecturers.map(lecturer => ({
+          $or: [
+            { name: new RegExp(lecturer, 'i') },
+            { description: new RegExp(lecturer, 'i') },
+            { tags: { $in: [new RegExp(lecturer, 'i')] } }
+          ]
+        }))
+      });
+    }
+
+    // Add file types to search terms
+    if (entities.file_types.length > 0) {
+      searchConditions.$and.push({
+        file_type: { $in: entities.file_types.map(type => new RegExp(type, 'i')) }
+      });
+    }
+
+    // Add weeks to search terms
+    if (entities.weeks.length > 0) {
+      searchConditions.$and.push({
+        $or: entities.weeks.map(week => ({
+          $or: [
+            { name: new RegExp(week, 'i') },
+            { description: new RegExp(week, 'i') },
+            { tags: { $in: [new RegExp(week, 'i')] } }
+          ]
+        }))
+      });
+    }
+
+    // Add semesters to search terms
+    if (entities.semesters.length > 0) {
+      searchConditions.$and.push({
+        $or: entities.semesters.map(semester => ({
+          $or: [
+            { name: new RegExp(semester, 'i') },
+            { description: new RegExp(semester, 'i') },
+            { tags: { $in: [new RegExp(semester, 'i')] } }
+          ]
+        }))
+      });
+    }
+
+    // If no specific entities, fall back to general text search
+    if (Object.values(entities).every(arr => arr.length === 0)) {
+      searchConditions.$and.push({
+        $text: { $search: processedQuery }
+      });
+    }
+
+    // Search files with the constructed conditions
+    const files = await File.find(searchConditions)
+      .populate('user', 'name email')
+      .sort({ createdAt: -1 });
+
+    // Search folders that might match (optional)
+    const folderSearchConditions = {
+      $and: [
+        { isTrash: false },
+        { owner: user._id }
+      ]
+    };
+
+    if (processedQuery) {
+      folderSearchConditions.$and.push({
+        $or: [
+          { name: new RegExp(processedQuery, 'i') },
+          { description: new RegExp(processedQuery, 'i') }
+        ]
+      });
+    }
+
+    const folders = await Folder.find(folderSearchConditions)
+      .populate('owner', 'name email')
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      query: processedQuery,
+      intent,
+      entities,
+      count: {
+        files: files.length,
+        folders: folders.length
+      },
+      results: {
+        files,
+        folders
       }
+    });
 
-      // Get suggestions from past searches
-      const pastSearches = await Search.find({
-        userId,
-        $text: { $search: q }
-      })
-      .sort({ timestamp: -1 })
-      .limit(5)
-      .select('processedQuery');
-
-      // Get suggestions from file names
-      const fileSuggestions = await File.aggregate([
-        { $match: { name: new RegExp(q, 'i') } },
-        { $group: { _id: '$name' } },
-        { $limit: 5 }
-      ]);
-
-      const suggestions = [
-        ...new Set([
-          ...pastSearches.map(s => s.processedQuery),
-          ...fileSuggestions.map(f => f._id)
-        ])
-      ].slice(0, 5);
-
-      res.json({ success: true, suggestions });
-
-    } catch (error) {
-      console.error('Suggestions Error:', error);
-      res.status(500).json({ 
-        success: false, 
-        error: 'Failed to get suggestions' 
-      });
-    }
-  },
-
-  getSearchHistory: async (req, res) => {
-    try {
-      const searches = await Search.find({ userId: req.user._id })
-        .sort({ timestamp: -1 })
-        .limit(20);
-      
-      res.json({ success: true, searches });
-    } catch (error) {
-      res.status(500).json({ success: false, error: 'Failed to get history' });
-    }
+  } catch (error) {
+    console.error('Search error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Search failed',
+      details: error.message
+    });
   }
 };
 
-// Helper functions
-function buildSearchQuery(nlpData) {
-  const query = { $text: { $search: nlpData.processedQuery } };
-  
-  nlpData.entities.forEach(entity => {
-    switch(entity.type) {
-      case 'professor':
-        query['metadata.professor'] = new RegExp(entity.value, 'i');
-        break;
-      case 'week':
-        query['metadata.week'] = parseInt(entity.value);
-        break;
-      case 'course':
-        query['metadata.course'] = new RegExp(entity.value, 'i');
-        break;
-      case 'filetype':
-        query.fileType = entity.value.toLowerCase();
-        break;
-    }
-  });
-
-  return query;
-}
-
-function formatFileResults(files) {
-  return files.map(file => ({
-    id: file._id,
-    name: file.name,
-    path: file.path,
-    type: file.type,
-    metadata: file.metadata,
-    score: file.relevanceScore || 0
-  }));
-}
-
-function generateSuggestions(files) {
-  const suggestions = new Set();
-  
-  files.forEach(file => {
-    if (file.metadata?.professor) {
-      suggestions.add(`${file.metadata.professor} ${file.metadata.course || 'lecture'} notes`);
-    }
-    if (file.metadata?.week) {
-      suggestions.add(`Week ${file.metadata.week} materials`);
-    }
-  });
-
-  return Array.from(suggestions).slice(0, 5);
-}
-
-module.exports = searchController;
+module.exports = {
+  smartSearch
+};

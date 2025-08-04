@@ -1,96 +1,106 @@
-import pandas as pd
-import random
-from faker import Faker
 import csv
+import os
+from faker import Faker
+import random
+from datetime import datetime, timedelta
 
 fake = Faker()
 
 # Configuration
-NUM_SAMPLES = 5000  # Adjust as needed
-PROFESSORS = ["Dr. Amoako", "Prof. Smith", "Dr. Johnson", "Prof. Lee", "Dr. Garcia"]
-COURSES = ["CS101", "MATH202", "PHYS301", "CHEM102", "BIO205"]
-CONTENT_TYPES = ["lecture notes", "slides", "assignments", "solutions", "readings", "exams"]
-WEEKS = list(range(1, 13))  # Weeks 1-12
-YEARS = ["2023", "2022", "2021"]
-MONTHS = ["January", "February", "March", "April", "September", "October"]
+NUM_FILES = 500
+CSV_FILE = "../datasets/file_metadata.csv"  # Saved one folder up in dataset directory
 
-def generate_query():
-    """Generate realistic academic queries with variations"""
-    pattern = random.choice([
-        "{prof} {course} week {week} {content}",
-        "{course} {content} week {week}",
-        "{prof} {content} {year}",
-        "{content} for {course}",
-        "Week {week} {content} {prof}",
-        "{month} {year} {content}",
-        "{prof} {course} {content}"
-    ])
-    
-    return pattern.format(
-        prof=random.choice(PROFESSORS),
-        course=random.choice(COURSES),
-        week=random.choice(WEEKS),
-        content=random.choice(CONTENT_TYPES),
-        year=random.choice(YEARS),
-        month=random.choice(MONTHS)
-    )
+# Constants based on your models
+LECTURERS = ["Dr. Gadaafi", "Dr. Amoako", "Prof. Mensah", "Mrs. Nyarko"]
+COURSES = ["IT Fundamentals", "Calculus I", "African History", "Programming Basics", 
+           "Data Structures", "Database Systems", "Operating Systems", "Computer Networks"]
+FILE_TYPES = ["lecture notes", "slides", "assignments", "readings", "tutorial", "exam", "solution"]
+WEEKS = [f"Week {i}" for i in range(1, 13)]
+SEMESTERS = ["Fall 2023", "Spring 2024", "Summer 2024"]
+EXTENSIONS = {
+    "lecture notes": ".pdf",
+    "slides": ".pptx",
+    "assignments": ".docx",
+    "readings": ".pdf",
+    "tutorial": ".pdf",
+    "exam": ".pdf",
+    "solution": ".pdf"
+}
 
-def extract_entities(query):
-    """Extract entities from generated query"""
-    entities = []
+def generate_file_metadata():
+    """Generate a single file metadata entry matching your File and Folder schema"""
+    lecturer = random.choice(LECTURERS)
+    course = random.choice(COURSES)
+    file_type = random.choice(FILE_TYPES)
+    week = random.choice(WEEKS) if file_type in ["lecture notes", "slides", "tutorial"] else None
+    semester = random.choice(SEMESTERS)
     
-    # Check for professor
-    for prof in PROFESSORS:
-        if prof in query:
-            entities.append((prof, "professor"))
+    # Generate filename based on content
+    if week:
+        filename = f"{course.replace(' ', '_')}_{week.replace(' ', '')}_{file_type.replace(' ', '_')}"
+    else:
+        filename = f"{course.replace(' ', '_')}_{file_type.replace(' ', '_')}"
     
-    # Check for course
-    for course in COURSES:
-        if course in query:
-            entities.append((course, "course"))
+    # Add extension
+    filename += EXTENSIONS.get(file_type, ".pdf")
     
-    # Check for week number
-    words = query.split()
-    for word in words:
-        if word.isdigit() and 1 <= int(word) <= 52:
-            entities.append((word, "week"))
+    # Generate description
+    if week:
+        description = f"{file_type.capitalize()} for {course} ({semester}) - {week} by {lecturer}"
+    else:
+        description = f"{file_type.capitalize()} for {course} ({semester}) by {lecturer}"
     
-    # Check for content type
-    for content in CONTENT_TYPES:
-        if content in query:
-            entities.append((content, "content_type"))
+    # Generate random size between 100KB and 50MB
+    size_kb = random.randint(100, 51200)
     
-    return entities
+    # Generate random tags (2-4 tags per file)
+    tags = set()
+    tags.add(course.lower())
+    tags.add(lecturer.split()[-1].lower())  # Last name
+    tags.add(file_type.replace(' ', '-'))
+    if week:
+        tags.add(week.lower().replace(' ', '-'))
+    tags.add(semester.lower().replace(' ', '-'))
+    
+    # Random creation date within the last 2 years
+    created_at = fake.date_time_between(start_date='-2y', end_date='now')
+    
+    return {
+        "name": filename,
+        "description": description,
+        "file_type": EXTENSIONS.get(file_type, ".pdf")[1:],  # Remove dot
+        "size": size_kb * 1024,  # Convert to bytes
+        "tags": list(tags),
+        "created_at": created_at.isoformat(),
+        "course": course,
+        "lecturer": lecturer,
+        "semester": semester,
+        "content_type": file_type,
+        "week": week if week else ""
+    }
 
-def determine_intent(entities):
-    """Determine intent based on entities"""
-    entity_types = {e[1] for e in entities}
-    
-    if "week" in entity_types:
-        return "find_lecture_materials"
-    elif "course" in entity_types and "content_type" in entity_types:
-        if "assignments" in {e[0] for e in entities}:
-            return "find_assignments"
-        elif "exams" in {e[0] for e in entities}:
-            return "find_exam_materials"
-    return "find_general_materials"
+def create_dataset():
+    """Create the dataset CSV file if it doesn't exist"""
+    if os.path.exists(CSV_FILE):
+        print(f"✅ Dataset already exists at {CSV_FILE}")
+        return
 
-def generate_dataset(num_samples):
-    data = []
-    for _ in range(num_samples):
-        query = generate_query()
-        entities = extract_entities(query)
-        intent = determine_intent(entities)
+    # Ensure dataset directory exists
+    os.makedirs(os.path.dirname(CSV_FILE), exist_ok=True)
+
+    with open(CSV_FILE, 'w', newline='', encoding='utf-8') as csvfile:
+        fieldnames = [
+            'name', 'description', 'file_type', 'size', 'tags', 
+            'created_at', 'course', 'lecturer', 'semester', 
+            'content_type', 'week'
+        ]
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         
-        data.append({
-            "query": query,
-            "intent": intent,
-            "entities": entities
-        })
-    return pd.DataFrame(data)
+        writer.writeheader()
+        for _ in range(NUM_FILES):
+            writer.writerow(generate_file_metadata())
+    
+    print(f"✅ Generated {NUM_FILES} file entries in {CSV_FILE}")
 
 if __name__ == "__main__":
-    # Generate and save dataset
-    df = generate_dataset(NUM_SAMPLES)
-    df.to_csv("academic_queries.csv", index=False, quoting=csv.QUOTE_ALL)
-    print(f"Generated {len(df)} samples in academic_queries.csv")
+    create_dataset()

@@ -39,13 +39,13 @@ app.use('/public', express.static(path.join(__dirname, 'public')));
 
 // Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/groups', groupRoutes);
+// app.use('/api/groups', groupRoutes);
 app.use('/api/files', fileRoutes);
 app.use('/api/folders', folderRoutes);
-// app.use('/api/trash', trashRoutes);
-// app.use('/api/search', searchRoutes);
+app.use('/api/trash', trashRoutes);
+app.use('/api/search', searchRoutes);
 // app.use('/api/notifications', notificationRoutes);
-app.use('/api/analytics', analyticsRoutes);
+// app.use('/api/analytics', analyticsRoutes);
 app.use('/api/starred', starredRoutes);
 
 const PORT = process.env.PORT;

@@ -11,12 +11,42 @@ import {
   createFolder,
   uploadFilesToFolder, 
   getFolders,
-  smartSearch
+  smartSearch,
+  moveToTrash
 } from "../services/api";
 import { toast } from "react-toastify";
 import { useOutletContext } from "react-router";
 import FolderListCard from "../components/FolderListCard";
 import { motion, AnimatePresence } from "framer-motion";
+
+const LoadingSkeleton = ({ type = 'folder', count = 3 }) => {
+  return (
+    <div className={`grid grid-cols-1 ${type === 'folder' ? 'sm:grid-cols-2 lg:grid-cols-3' : 'sm:grid-cols-2'} gap-4`}>
+      {Array.from({ length: count }).map((_, index) => (
+        <div key={index} className="bg-gray-100 rounded-lg overflow-hidden animate-pulse">
+          {type === 'folder' ? (
+            <div className="p-4 space-y-3">
+              <div className="h-6 bg-gray-200 rounded w-3/4"></div>
+              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+              <div className="flex gap-2">
+                <div className="h-8 w-8 bg-gray-200 rounded-full"></div>
+                <div className="h-8 w-8 bg-gray-200 rounded-full"></div>
+              </div>
+            </div>
+          ) : (
+            <div className="p-4 flex items-center gap-3">
+              <div className="h-12 w-12 bg-gray-200 rounded"></div>
+              <div className="flex-1 space-y-2">
+                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+              </div>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+};
 
 const Dashboard = () => {
   // File states
@@ -32,6 +62,8 @@ const Dashboard = () => {
   const [userInput, setUserInput] = useState('');
   const [folderFiles, setFolderFiles] = useState([]);
   const [showAllFolders, setShowAllFolders] = useState(false);
+  const [filesLoading, setFilesLoading] = useState(true);
+  const [foldersLoading, setFoldersLoading] = useState(true);
 
   
   // UI states
@@ -68,6 +100,8 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setFilesLoading(true);
+        setFoldersLoading(true);
         const [foldersData, filesData] = await Promise.all([
           getFolders(),
           getFiles()
@@ -77,6 +111,9 @@ const Dashboard = () => {
         setFilteredFiles(filesData);
       } catch (error) {
         toast.error("Failed to load data: " + (error.message || "Unknown error"));
+      } finally {
+        setFilesLoading(false);
+        setFoldersLoading(false);
       }
     };
     fetchData();
@@ -134,6 +171,7 @@ const Dashboard = () => {
       setFile(null);
       setIsPreviewOpen(false);
       setDescription('');
+      setFilesLoading(true);
       const updatedFiles = await getFiles();
       setFiles(updatedFiles);
       setFilteredFiles(updatedFiles);
@@ -142,6 +180,7 @@ const Dashboard = () => {
       toast.error(err.response?.data?.error || "Upload failed");
     } finally {
       setLoading(false);
+      setFilesLoading(false);
     }
   };
 
@@ -187,6 +226,7 @@ const Dashboard = () => {
       setFolderFiles([]);
       
       // Refresh data
+      setFoldersLoading(true);
       const updatedFolders = await getFolders();
       setFolders(updatedFolders);
       // setFilteredFiles(updatedFiles);
@@ -195,6 +235,7 @@ const Dashboard = () => {
       toast.error(error.response?.data?.message || "Operation failed");
     } finally {
       setLoading(false);
+      setFoldersLoading(false);
     }
   };
 
@@ -204,6 +245,35 @@ const Dashboard = () => {
     ));
   };
 
+  const handleMoveToTrash = async (id, type) => {
+    try {
+      // Optimistic update
+      if (type === 'folder') {
+        setFolders(prev => prev.filter(folder => folder._id !== id));
+      } else {
+        setFiles(prev => prev.filter(file => file._id !== id));
+        setFilteredFiles(prev => prev.filter(file => file._id !== id));
+      }
+      
+      await moveToTrash(id, type);
+      toast.success(`${type} moved to trash`);
+    } catch (error) {
+      // Revert optimistic update
+      if (type === 'folder') {
+        const folder = folders.find(f => f._id === id);
+        if (folder) setFolders(prev => [...prev, folder]);
+      } else {
+        const file = files.find(f => f._id === id);
+        if (file) {
+          setFiles(prev => [...prev, file]);
+          setFilteredFiles(prev => [...prev, file]);
+        }
+      }
+      console.log(error)
+      toast.error(`Failed to move ${type} to trash`);
+    }
+  };
+  
   const handleFileStarChange = (fileId, newStarredState) => {
     setFiles(files.map(file => 
       file._id === fileId ? { ...file, is_starred: newStarredState } : file
@@ -478,7 +548,9 @@ const Dashboard = () => {
           {/* Folders Section */}
           <h2 className="text-xl font-semibold mb-4">Folders</h2>
 
-          {folders.length > 0 ? (
+          {foldersLoading ? (
+            <LoadingSkeleton type="folder" count={3} />
+          ) : folders.length > 0 ? (
             viewMode == 'grid' ? (
               <div className="space-y-6">
                 {/* Top Row - First 3 Folders */}
@@ -497,6 +569,7 @@ const Dashboard = () => {
                       users={folder.shared_with?.map(user => user.avatar) || []}
                       isStarred={folder.is_starred}
                       onStarChange={handleFolderStarChange}
+                      onMoveToTrash={handleMoveToTrash}
                     />
                   ))}
                 </div>
@@ -518,6 +591,7 @@ const Dashboard = () => {
                         users={folder.shared_with?.map(user => user.avatar) || []}
                         isStarred={folder.is_starred}
                         onStarChange={handleFolderStarChange}
+                        onMoveToTrash={handleMoveToTrash}
                       />
                     ))}
                   </div>
@@ -566,6 +640,7 @@ const Dashboard = () => {
                         users={folder.shared_with?.map(user => user.avatar) || []}
                         isStarred={folder.is_starred}
                         onStarChange={handleFolderStarChange}
+                        onMoveToTrash={handleMoveToTrash}
                       />
                     ))}
                   </div>
@@ -588,6 +663,7 @@ const Dashboard = () => {
                   users={folder.shared_with?.map(user => user.avatar) || []}
                   isStarred={folder.is_starred}
                   onStarChange={handleFolderStarChange}
+                  onMoveToTrash={handleMoveToTrash}
                 />
               ))}
               
@@ -624,7 +700,7 @@ const Dashboard = () => {
           }`}>
             <div className="flex justify-between items-center p-4 border-b border-gray-100">
               <h2 className="text-lg font-semibold">Recent Files</h2>
-              {viewMode === 'grid' && files.length > 3 && (
+              {viewMode === 'grid' && files.length > 3 && !filesLoading  && (
                 <button 
                   onClick={() => setShowAllRecentFiles(!showAllRecentFiles)}
                   className="text-sm text-[var(--color-primary)] hover:text-[#1d6a8f]"
@@ -633,12 +709,15 @@ const Dashboard = () => {
                 </button>
               )}
             </div>
-            
-            {files.length > 0 ? (
+            {filesLoading ? (
+                <div className="p-4">
+                  <LoadingSkeleton type="file" count={3} />
+                </div>
+              ) : files.length > 0 ? (
               viewMode === 'list' ? (
                 <div className="divide-y divide-gray-100">
                   {files.slice(0, 5).map((file, index) => (
-                    <RecentFiles key={file.id || index} file={file} viewMode={viewMode} />
+                    <RecentFiles key={file.id || index} file={file} viewMode={viewMode} onMoveToTrash={handleMoveToTrash} />
                   ))}
                 </div>
               ) : (
@@ -650,6 +729,7 @@ const Dashboard = () => {
                         file={file} 
                         viewMode={viewMode}
                         isGridItem={true}
+                        onMoveToTrash={handleMoveToTrash}
                       />
                     ))}
                   </div>
@@ -666,7 +746,11 @@ const Dashboard = () => {
         {/* Sidebar */}
         <div className="flex flex-col gap-6">
           <div className="bg-[#E6E6FA] p-4 rounded-lg w-full">
-            <FileActivityCalendar />
+          {filesLoading || foldersLoading ? (
+              <div className="h-64 bg-gray-100 rounded-lg animate-pulse"></div>
+            ) : (
+              <FileActivityCalendar />
+            )}
           </div>
         </div>
       </div>

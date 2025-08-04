@@ -11,16 +11,6 @@ router.post('/smart',
   searchController.smartSearch
 );
 
-// Search suggestions
-router.get('/suggestions', 
-  protect,
-  searchController.getSuggestions
-);
 
-// User search history
-router.get('/history', 
-  protect,
-  searchController.getSearchHistory
-);
 
 module.exports = router;

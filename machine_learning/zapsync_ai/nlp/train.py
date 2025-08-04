@@ -1,74 +1,109 @@
 import pandas as pd
+import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.linear_model import LogisticRegression
-from sklearn_crfsuite import CRF
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression  # Changed from LinearSVC
+from sklearn.metrics import classification_report
+from sklearn.pipeline import Pipeline
 import joblib
+import os
+from sklearn.calibration import CalibratedClassifierCV  # For better probability estimates
 
-def load_data():
-    """Load data from CSV and prepare for training"""
-    df = pd.read_csv("../datasets/academic_queries.csv")
-    
-    # Convert string representation of entities to actual lists
-    df['entities'] = df['entities'].apply(eval)  # Only if saved as string literals
-    
-    return df
+# Constants
+DATASET_PATH = "../datasets/file_metadata.csv"
+MODEL_SAVE_PATH = "../models/file_classifier_model.pkl"
 
-def train_models():
-    data = load_data()
+def load_and_preprocess_data():
+    """Load and preprocess the dataset"""
+    df = pd.read_csv(DATASET_PATH)
     
-    # 1. Intent Classifier
-    vectorizer = TfidfVectorizer(max_features=5000)
-    X = vectorizer.fit_transform(data['query'])
-    y_intent = data['intent']
+    # Convert tags from string representation to list
+    df['tags'] = df['tags'].apply(lambda x: eval(x) if isinstance(x, str) else x)
     
-    intent_model = LogisticRegression(multi_class='ovr', max_iter=1000)
-    intent_model.fit(X, y_intent)
-    
-    # 2. Entity Recognizer (CRF)
-    X_entities = [extract_features(q) for q in data['query']]
-    y_entities = data['entities']
-    
-    entity_model = CRF(
-        algorithm='lbfgs',
-        c1=0.1,
-        c2=0.1,
-        max_iterations=100,
-        all_possible_transitions=True
+    # Create combined text features for NLP
+    df['combined_text'] = (
+        df['name'] + ' ' + 
+        df['description'] + ' ' + 
+        df['course'] + ' ' + 
+        df['lecturer'] + ' ' + 
+        df['semester'] + ' ' + 
+        df['content_type'] + ' ' + 
+        df['week'].fillna('') + ' ' + 
+        df['tags'].apply(lambda x: ' '.join(x))
     )
-    entity_model.fit(X_entities, y_entities)
     
-    # Save models
-    joblib.dump(intent_model, 'trained_models/intent_model.pkl')
-    joblib.dump(entity_model, 'trained_models/entity_model.pkl')
-    joblib.dump(vectorizer, 'trained_models/tfidf_vectorizer.pkl')
-    print("Models trained and saved successfully!")
+    # Our target will be predicting the content_type (lecture notes, slides, etc.)
+    X = df['combined_text']
+    y = df['content_type']
+    
+    return X, y
 
-def extract_features(text):
-    """Enhanced feature extraction for CRF"""
-    features = []
-    words = text.split()
+def train_model(X, y):
+    """Train the NLP classification model"""
+    # Split data
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42
+    )
     
-    for i, word in enumerate(words):
-        features.append({
-            'word': word,
-            'word.lower()': word.lower(),
-            'word.istitle()': word.istitle(),
-            'word.isupper()': word.isupper(),
-            'word.isdigit()': word.isdigit(),
-            'prefix1': word[:1],
-            'prefix2': word[:2],
-            'prefix3': word[:3],
-            'suffix1': word[-1:],
-            'suffix2': word[-2:],
-            'suffix3': word[-3:],
-            'length': len(word),
-            'position': i,
-            'is_prof_title': word.lower() in ['dr.', 'prof.'],
-            'is_course_code': any(c in word for c in ['CS','MATH','PHYS']),
-            'is_week': word.isdigit() and 1 <= int(word) <= 52,
-        })
+    # Create pipeline with TF-IDF and classifier
+    base_pipeline = Pipeline([
+        ('tfidf', TfidfVectorizer(
+            max_features=10000,
+            ngram_range=(1, 2),
+            stop_words='english'
+        )),
+        ('clf', LogisticRegression(  # Using LogisticRegression instead of LinearSVC
+            class_weight='balanced',
+            max_iter=1000,
+            C=0.5,
+            solver='lbfgs',  # Good for multiclass problems
+            multi_class='multinomial'
+        ))
+    ])
     
-    return features
+    # Wrap with CalibratedClassifierCV for better probability estimates
+    pipeline = CalibratedClassifierCV(base_pipeline, cv=3)
+    
+    # Train model
+    print("⏳ Training model...")
+    pipeline.fit(X_train, y_train)
+    
+    # Evaluate
+    y_pred = pipeline.predict(X_test)
+    print(classification_report(y_test, y_pred))
+    
+    # Show some example probabilities
+    test_probs = pipeline.predict_proba(X_test[:3])
+    print("\nExample probability distributions:")
+    for i, probs in enumerate(test_probs):
+        print(f"Sample {i+1}:")
+        for cls, prob in zip(pipeline.classes_, probs):
+            print(f"  {cls}: {prob:.3f}")
+    
+    return pipeline
+
+def save_model(pipeline):
+    """Save the model"""
+    # Ensure parent directory exists
+    os.makedirs(os.path.dirname(MODEL_SAVE_PATH), exist_ok=True)
+    
+    # Save the entire pipeline
+    joblib.dump(pipeline, MODEL_SAVE_PATH)
+    print(f"✅ Model saved to {MODEL_SAVE_PATH}")
+
+def main():
+    try:
+        # Load and preprocess data
+        X, y = load_and_preprocess_data()
+        
+        # Train model
+        model = train_model(X, y)
+        
+        # Save model
+        save_model(model)
+        
+    except Exception as e:
+        print(f"❌ Error: {str(e)}")
 
 if __name__ == "__main__":
-    train_models()
+    main()
