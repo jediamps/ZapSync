@@ -1,5 +1,7 @@
 const axios = require('axios');
-const DJANGO_API_URL = 'http://127.0.0.1:8000/nlp/process/';
+// const DJANGO_API_URL = 'http://127.0.0.1:8000/nlp/process/';
+const DJANGO_API_URL = 'https://zapsyncml.onrender.com/nlp/process/';
+
 
 const processQuery = async (req, res, next) => {
   try {
