@@ -27,17 +27,14 @@ const userSchema = new mongoose.Schema({
   },
   ip_address: {
     type: String,
-    required: true,
     trim: true
   },
   country: {
     type: String,
-    required: true,
     trim: true
   },
   city: {
     type: String,
-    required: true,
     trim: true
   },
   role: {

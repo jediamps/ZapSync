@@ -8,3 +8,4 @@ openpyxl
 django 
 djangorestframework
 sentence-transformers
+imblearn

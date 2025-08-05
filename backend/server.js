@@ -12,6 +12,8 @@ const notificationRoutes = require('./routes/notificationRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
 const starredRoutes = require('./routes/starredRoutes');
 const path = require('path');
+const { setupAutoExport } = require('./controllers/searchController');
+const mongoose = require('mongoose');
 
 dotenv.config();
 
@@ -52,4 +54,9 @@ const PORT = process.env.PORT;
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+});
+
+// After database connection is established
+mongoose.connection.once('open', () => {
+  setupAutoExport();
 });

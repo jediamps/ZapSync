@@ -5,109 +5,154 @@ import numpy as np
 from sentence_transformers import SentenceTransformer
 from typing import Dict, Union, List
 import os
+import re
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 class NLPPredictor:
     def __init__(self):
-        # Load models
+        # Model paths
         self.model_path = os.path.join(os.path.dirname(__file__), '..', 'models', 'file_classifier_model.pkl')
-        self.semantic_model = SentenceTransformer('all-MiniLM-L6-v2')
+        self.vectorizer_path = os.path.join(os.path.dirname(__file__), '..', 'models', 'keyword_extractor.pkl')
         
         try:
-            self.classifier = joblib.load(self.model_path)
+            # Load classifier pipeline and vectorizer
+            self.classifier_pipeline = joblib.load(self.model_path)
+            self.keyword_extractor = joblib.load(self.vectorizer_path)
+            self.semantic_model = SentenceTransformer('all-MiniLM-L6-v2')
         except Exception as e:
             raise RuntimeError(f"Failed to load models: {str(e)}")
 
+    def preprocess_text(self, text: str) -> str:
+        """Match the preprocessing used during training"""
+        if not isinstance(text, str):
+            return ""
+        text = re.sub(r"[^\w\s'-]", " ", text.lower())
+        text = re.sub(r"\b\d+\b", " ", text)
+        text = re.sub(r"\s+", " ", text).strip()
+        return text
+
     def extract_entities(self, text: str) -> Dict[str, Union[str, List[str]]]:
-        """Extract key entities from search query"""
+        """Enhanced entity extraction matching our new categories"""
         entities = {
             'courses': [],
             'lecturers': [],
             'file_types': [],
+            'categories': [],
             'weeks': [],
             'semesters': [],
-            'keywords': []
+            'keywords': self.extract_keywords(text)  # Using our trained keyword extractor
         }
         
-        # Known entity lists (could be loaded from config)
-        known_courses = ["IT Fundamentals", "Calculus I", "African History", "Programming Basics"]
-        known_lecturers = ["Dr. Gadaafi", "Dr. Amoako", "Prof. Mensah", "Mrs. Nyarko"]
-        known_file_types = ["lecture notes", "slides", "assignments", "readings"]
+        # Updated known entities to match your dataset
+        known_courses = ["Python", "Machine Learning", "Operations Research", "Software Engineering"]
+        known_lecturers = ["Dr Partey", "Prof Eyram", "Dr Gadafi", "Prof Mensah"]
         
-        # Simple pattern matching
         text_lower = text.lower()
+        
+        # Extract courses
         for course in known_courses:
             if course.lower() in text_lower:
                 entities['courses'].append(course)
         
+        # Extract lecturers
         for lecturer in known_lecturers:
             if lecturer.lower() in text_lower:
                 entities['lecturers'].append(lecturer)
         
-        for file_type in known_file_types:
-            if file_type.lower() in text_lower:
-                entities['file_types'].append(file_type)
+        # Extract file types (extension-based)
+        file_types = {
+            'pdf': 'PDF',
+            'docx': 'Word',
+            'pptx': 'PowerPoint',
+            'png': 'Image',
+            'jpg': 'Image',
+            'jpeg': 'Image',
+            'cpp': 'Code',
+            'py': 'Code'
+        }
+        for ext, display_name in file_types.items():
+            if f'.{ext}' in text_lower:
+                entities['file_types'].append(display_name)
         
         # Week detection
-        if 'week' in text_lower:
-            week_part = text_lower.split('week')[-1].strip()
-            if week_part and week_part[0].isdigit():
-                entities['weeks'].append(f"Week {week_part[0]}")
-        
-        # Semester detection
-        if 'fall' in text_lower:
-            entities['semesters'].append('Fall')
-        if 'spring' in text_lower:
-            entities['semesters'].append('Spring')
-        if 'summer' in text_lower:
-            entities['semesters'].append('Summer')
+        week_match = re.search(r'week\s*(\d+)', text_lower)
+        if week_match:
+            entities['weeks'].append(f"Week {week_match.group(1)}")
         
         return entities
 
+    def extract_keywords(self, text: str, top_n: int = 5) -> List[str]:
+        """Extract keywords using our trained vectorizer"""
+        processed_text = self.preprocess_text(text)
+        tfidf_matrix = self.keyword_extractor.transform([processed_text])
+        feature_array = np.array(self.keyword_extractor.get_feature_names_out())
+        tfidf_sorting = np.argsort(tfidf_matrix.toarray()).flatten()[::-1]
+        return feature_array[tfidf_sorting][:top_n].tolist()
+
     def predict_intent(self, text: str) -> Dict[str, Union[str, float]]:
-        """Predict the search intent using the classifier"""
+        """Predict the file category using our classifier"""
         try:
-            # Transform text using the same preprocessing as during training
-            text_processed = " ".join([
-                text.lower(), 
-                " ".join(self.extract_entities(text)["courses"]),
-                " ".join(self.extract_entities(text)["file_types"])
-            ])
+            processed_text = self.preprocess_text(text)
             
-            # Debug the input
-            print(f"Processed text for prediction: {text_processed}")
-            
-            # Get prediction
-            prediction = self.classifier.predict_proba([text_processed])[0]
+            # Get prediction with confidence
+            prediction = self.classifier_pipeline.predict_proba([processed_text])[0]
             top_idx = np.argmax(prediction)
-            intent = self.classifier.classes_[top_idx]
+            intent = self.classifier_pipeline.classes_[top_idx]
             confidence = float(prediction[top_idx])
             
-            # Debug output
-            print(f"Raw prediction: {prediction}")
-            print(f"Predicted intent: {intent} (confidence: {confidence})")
+            # Apply business rules
+            intent = self.apply_business_rules(processed_text, intent, confidence)
             
             return {
                 "intent": intent,
                 "confidence": confidence
             }
         except Exception as e:
-            print(f"Prediction error: {str(e)}")
             return {
                 "intent": "unknown",
                 "confidence": 0.0,
                 "error": str(e)
             }
 
+    def apply_business_rules(self, text: str, intent: str, confidence: float) -> str:
+        """Override predictions based on business rules"""
+        # Force certain patterns regardless of model prediction
+        if 'lecture' in text and intent != 'lecture':
+            return 'lecture'
+        if 'slide' in text and intent != 'slide':
+            return 'slide'
+        if 'assignment' in text and intent != 'assignment':
+            return 'assignment'
+        if 'exam' in text and intent != 'exam':
+            return 'exam'
+        if 'research' in text and intent != 'research':
+            return 'research'
+        return intent
+
     def predict(self, text: str) -> Dict:
-        """Main prediction method"""
+        """Main prediction method with enhanced output"""
         entities = self.extract_entities(text)
         intent_result = self.predict_intent(text)
         
         return {
-            "intent": intent_result["intent"],
+            "text": text,
+            "predicted_category": intent_result["intent"],
             "confidence": intent_result["confidence"],
-            "entities": entities
+            "entities": entities,
+            "suggested_filters": self.generate_filters(intent_result, entities)
         }
+
+    def generate_filters(self, intent_result: Dict, entities: Dict) -> Dict:
+        """Generate search filters for Node.js API"""
+        filters = {
+            'category': intent_result['intent'],
+            'file_type': entities['file_types'],
+            'course': entities['courses'],
+            'lecturer': entities['lecturers'],
+            'week': entities['weeks'],
+            'keywords': entities['keywords']
+        }
+        return {k: v for k, v in filters.items() if v}  # Remove empty filters
 
 # Initialize predictor instance
 predictor = NLPPredictor()
@@ -115,29 +160,27 @@ predictor = NLPPredictor()
 @api_view(['POST'])
 def process_request(request):
     """
-    Process natural language search queries
-    Example request body:
+    Classify files based on their names and metadata
+    Example Postman request:
+    POST /api/classify-file
     {
-        "text": "Find Dr. Amoako's week 3 lecture notes on IT Fundamentals"
+        "text": "Dr Partey Lecture notes week 5 machine learning.pdf"
     }
     """
-    text = request.data.get('text', '').strip()
-    if not text:
-        return Response({"error": "No text provided"}, status=400)
-    
     try:
+        text = request.data.get('text', '').strip()
+        if not text:
+            return Response({"error": "No text provided"}, status=400)
+        
         result = predictor.predict(text)
+        
         return Response({
-            "processed_query": text,
-            "intent": result["intent"],
-            "confidence": result["confidence"],
-            "entities": result["entities"]
+            "success": True,
+            "result": result
         })
+    
     except Exception as e:
         return Response({
-            "error": f"Processing failed: {str(e)}",
-            "processed_query": text,
-            "intent": "error",
-            "confidence": 0.0,
-            "entities": {}
+            "success": False,
+            "error": str(e)
         }, status=500)

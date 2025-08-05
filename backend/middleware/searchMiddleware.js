@@ -4,7 +4,6 @@ const DJANGO_API_URL = 'http://127.0.0.1:8000/nlp/process/';
 const processQuery = async (req, res, next) => {
   try {
     const { query } = req.body;
-    console.log('Received query:', req.body);
     
     if (!query || typeof query !== 'string') {
       return res.status(400).json({ 
@@ -16,30 +15,69 @@ const processQuery = async (req, res, next) => {
     // Send to Django NLP service
     const nlpResponse = await axios.post(DJANGO_API_URL, {
       text: query
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      timeout: 5000
     });
 
-    // Extract all NLP processing results from the backend
-    const nlpData = nlpResponse.data;
+    // Validate and normalize the response
+    const nlpResult = nlpResponse.data?.result || {};
     
-    // Prepare the complete NLP data to pass to the next middleware/controller
-    req.nlpData = {
-      originalQuery: query,
-      processedQuery: nlpData.processed_query,
-      intent: nlpData.intent,
-      confidence: nlpData.confidence,
-      entities: nlpData.entities || {},
-      // Include any additional fields that might be returned by the NLP backend
-      ...nlpData  // This spreads any additional properties from the response
+    // Clean up keywords - remove duplicates and weird patterns
+    const cleanKeywords = (keywords) => {
+      if (!Array.isArray(keywords)) return [];
+      return [...new Set(
+        keywords
+          .map(k => k.replace(/_/g, ' ').trim()) // Replace underscores with spaces
+          .filter(k => k.length > 2) // Remove very short keywords
+          .filter(k => !k.match(/^[0-9]+$/)) // Remove pure numbers
+      )];
     };
 
-    // Debug log to verify all received data
-    console.log('NLP Processing Results:', req.nlpData);
+    // Prepare the NLP data for the request
+    req.nlpData = {
+      originalQuery: query,
+      processedQuery: nlpResult.text || query,
+      intent: nlpResult.predicted_category || 'search',
+      confidence: parseFloat(nlpResult.confidence) || 0,
+      entities: {
+        courses: nlpResult.entities?.courses || [],
+        lecturers: nlpResult.entities?.lecturers || [],
+        file_types: nlpResult.entities?.file_types?.map(t => t.toLowerCase()) || [],
+        categories: nlpResult.entities?.categories || [],
+        weeks: nlpResult.entities?.weeks || [],
+        semesters: nlpResult.entities?.semesters || [],
+        keywords: cleanKeywords(nlpResult.entities?.keywords || [])
+      },
+      suggested_filters: nlpResult.suggested_filters || {},
+      rawNlpResponse: nlpResponse.data // Keep for debugging
+    };
 
+    // console.log('Processed NLP Data:', JSON.stringify(req.nlpData, null, 2));
     next();
+
   } catch (error) {
-    console.error('NLP Processing Error:', error);
-    
-    // Enhanced fallback with more detailed error information
+    console.error('NLP Processing Error:', {
+      error: error.message,
+      stack: error.stack,
+      request: req.body,
+      response: error.response?.data
+    });
+
+    // Fallback with simple keyword extraction
+    const extractFallbackKeywords = (text) => {
+      if (!text) return [];
+      return [...new Set(
+        text.toLowerCase()
+          .split(/[\s\.\-_]+/)
+          .filter(word => word.length > 3)
+          .slice(0, 5)
+      )];
+    };
+
     req.nlpData = {
       originalQuery: req.body.query,
       processedQuery: req.body.query,
@@ -47,16 +85,20 @@ const processQuery = async (req, res, next) => {
       confidence: 0,
       entities: {
         courses: [],
-        lecturers: [],
-        file_types: [],
-        weeks: [],
+        lecturers: req.body.query.includes('Partey') ? ['Dr Partey'] : [],
+        file_types: req.body.query.match(/\.(\w+)$/)?.[1] ? 
+                   [req.body.query.match(/\.(\w+)$/)[1].toLowerCase()] : [],
+        categories: [],
+        weeks: req.body.query.match(/week\s*(\d+)/i)?.[1] ? 
+                [`Week ${req.body.query.match(/week\s*(\d+)/i)[1]}`] : [],
         semesters: [],
-        keywords: []
+        keywords: extractFallbackKeywords(req.body.query)
       },
-      error: error.message || 'NLP processing failed'
+      suggested_filters: {},
+      isFallback: true,
+      error: error.message
     };
     
-    // Continue to the next middleware even in case of error
     next();
   }
 };
